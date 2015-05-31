@@ -360,9 +360,9 @@ fm_dev_ereport_postv(dev_info_t *dip, dev_info_t *eqdip,
 	 * platforms. We should probably factor this out into a general
 	 * macro/check.
 	 */
-#ifdef __arm__
+#if defined(__arm__)
 	ASSERT(ap.__ap != NULL);
-#else
+#elif !defined(__aarch64__)
 	ASSERT(ap != NULL);	/* must supply at least ereport version */
 #endif
 	ASSERT(dip && eqdip && error_class);

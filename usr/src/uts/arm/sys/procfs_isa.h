@@ -51,7 +51,7 @@ extern "C" {
  * To determine whether application is running native.
  */
 #if defined(_LP64)
-#error "_LP64 not supported on ARM"
+#define	PR_MODEL_NATIVE	PR_MODEL_LP64
 #elif defined(_ILP32)
 #define	PR_MODEL_NATIVE	PR_MODEL_ILP32
 #else

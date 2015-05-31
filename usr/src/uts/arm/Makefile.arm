@@ -17,7 +17,7 @@
 #
 #	Machine type (implementation architecture):
 #
-PLATFORM	= armv7
+PLATFORM	= armv8
 
 
 #	Everybody needs to know how to build modstubs.o and to locate unix.o.
@@ -28,7 +28,7 @@ PLATFORM	= armv7
 #	because it is the reference port. XXX: are these used?
 #
 
-UNIX_DIR	 = $(UTSBASE)/armv6/bcm2836/unix # XXX: non-existent
+UNIX_DIR	 = $(UTSBASE)/armv8/unix
 GENLIB_DIR	 = $(UTSBASE)/arm/genunix
 IPDRV_DIR	 = $(UTSBASE)/arm/ip
 MODSTUBS_DIR	 = $(UNIX_DIR)

@@ -89,6 +89,7 @@ extern "C" {
 
 typedef long	greg_t;
 typedef greg_t	gregset_t[_NGREG];
+typedef greg_t  gregset32_t[_NGREG]; /* XXX: cheating/wrong */
 
 /*
  * Floating point definitions
@@ -104,6 +105,14 @@ typedef struct fpu {
 typedef struct {
 	gregset_t	gregs;	/* General register set */
 } mcontext_t;
+
+#if defined(_SYSCALL32)
+
+typedef struct {
+	gregset32_t	gregs;	/* General register set */
+} mcontext32_t;
+
+#endif
 
 #endif	/* _ASM */
 #endif	/* !defined(_XPG4_2) || defined(__EXTENSIONS__) */

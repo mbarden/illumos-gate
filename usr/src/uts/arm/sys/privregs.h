@@ -32,7 +32,7 @@ extern "C" {
  * need.
  */
 
-#if !defined(__arm__)
+#if !defined(__arm__) && !defined(__aarch64__)
 #error	"non-ARM code depends on ARM privilieged header!"
 #endif
 

@@ -36,6 +36,9 @@ threadp(void)
 	__asm__ __volatile__(
 	    "mrc p15, 0, %0, c13, c0, 4"
 	    : "=r" (__value));
+#elif defined(__aarch64__)
+/* XXXARM64: NOT YET IMPLEMENTED */
+	__value = NULL;
 #else
 #error	"port me"
 #endif

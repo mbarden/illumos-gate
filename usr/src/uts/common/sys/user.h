@@ -188,8 +188,10 @@ typedef struct {		/* kernel syscall set type */
 #define	__KERN_NAUXV_IMPL 20
 #elif defined(__i386) || defined(__amd64)
 #define	__KERN_NAUXV_IMPL 22
-#elif defined(__arm__)
+#elif defined(__arm__) || defined(__aarch64__)
 #define	__KERN_NAUXV_IMPL 20	/* XXX TOTAL GUESS */
+#else
+#error "port me"
 #endif
 
 struct execsw;

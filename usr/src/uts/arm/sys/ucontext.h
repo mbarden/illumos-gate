@@ -93,6 +93,26 @@ struct	__ucontext {
 	long		uc_filler[1]; /* XXX Revisit when fp in mcontext */
 };
 
+#if defined(_SYSCALL32)
+
+/* Kernel view of user ILP32 ucontext structure */
+
+typedef struct ucontext32 {
+	uint32_t	uc_flags;
+	caddr32_t	uc_link;
+	sigset_t	uc_sigmask;
+	stack32_t	uc_stack;
+	mcontext32_t	uc_mcontext;
+	int32_t		uc_filler[1];
+} ucontext32_t;
+
+#if defined(_KERNEL)
+extern void ucontext_nto32(const ucontext_t *src, ucontext32_t *dest);
+extern void ucontext_32ton(const ucontext32_t *src, ucontext_t *dest);
+#endif
+
+#endif	/* _SYSCALL32 */
+
 #if !defined(_XPG4_2) || defined(__EXTENSIONS__)
 #define	GETCONTEXT	0
 #define	SETCONTEXT	1

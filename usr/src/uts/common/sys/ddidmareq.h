@@ -383,7 +383,7 @@ typedef struct ddi_dma_lim {
 
 } ddi_dma_lim_t;
 
-#elif defined(__arm__)
+#elif defined(__arm__) || defined(__aarch64__)
 /*
  * XXXARM: We're starting with the intel version here. This may or may not be
  * sufficient and we'll need to change this. Don't be afraid.

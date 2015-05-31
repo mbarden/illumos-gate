@@ -908,7 +908,7 @@ typedef struct ddi_dma_impl {
 	ndi_err_t	dmai_error;
 } ddi_dma_impl_t;
 
-#elif defined(__arm__)
+#elif defined(__arm__) || defined(__aarch64__)
 
 /*
  * XXXARM: This is a stuf for future use based on x86
