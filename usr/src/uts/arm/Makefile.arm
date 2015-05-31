@@ -14,8 +14,6 @@
 # Copyright (c) 2015, Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
 #
 
-UTSTREE=$(UTSBASE)
-
 #
 #	Machine type (implementation architecture):
 #
@@ -51,8 +49,8 @@ MODSTUBS_O	 = $(MODSTUBS_DIR)/$(OBJS_DIR)/modstubs.o
 #	(Such as a machine specific optimization, which preserves the
 #	interfaces.)
 #
-include $(UTSTREE)/arm/Makefile.files
-include $(UTSTREE)/common/Makefile.files
+include $(UTSBASE)/arm/Makefile.files
+include $(UTSBASE)/common/Makefile.files
 
 #
 # ----- TRANSITIONAL SECTION --------------------------------------------------
