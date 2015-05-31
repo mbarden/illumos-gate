@@ -115,6 +115,7 @@ CC_i386_64	= $(amd64_CC)
 CC_amd64_64	= $(amd64_CC)
 
 CC_arm_32	= $(arm_CC)
+CC_arm_64	= $(arm64_CC)
 
 CC		= $(CC_$(MACH)_$(CLASS))
 
@@ -126,6 +127,7 @@ AS_i386_64	= $(amd64_AS)
 AS_amd64_64	= $(amd64_AS)
 
 AS_arm_32	= $(arm_AS)
+AS_arm_64	= $(arm64_AS)
 
 AS		= $(AS_$(MACH)_$(CLASS))
 
@@ -137,6 +139,7 @@ LD_i386_64	= $(amd64_LD)
 LD_amd64_64	= $(amd64_LD)
 
 LD_arm_32	= $(arm_LD)
+LD_arm_64	= $(arm64_LD)
 
 LD		= $(LD_$(MACH)_$(CLASS))
 

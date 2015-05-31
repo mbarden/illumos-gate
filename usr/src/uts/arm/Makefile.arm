@@ -83,17 +83,19 @@ MODSTUBS		= $(UTSBASE)/arm/ml/modstubs.s
 #
 #	Define supported builds
 #
-DEF_BUILDS		= $(DEF_BUILDS32)
-ALL_BUILDS		= $(ALL_BUILDS32)
+DEF_BUILDS		= $(DEF_BUILDS64)
+ALL_BUILDS		= $(ALL_BUILDS64)
 
 #
 #	kernel-specific optimizations; override default in Makefile.master
 #
 
 CFLAGS_XARCH_32		= $(arm_CFLAGS)
+CFLAGS_XARCH_64		= $(arm64_CFLAGS)
 CFLAGS_XARCH		= $(CFLAGS_XARCH_$(CLASS))
 
 COPTFLAG_32		= $(COPTFLAG)
+COPTFLAG_64		= $(COPTFLAG64)
 COPTIMIZE		= $(COPTFLAG_$(CLASS))
 
 CFLAGS			= $(CFLAGS_XARCH)
@@ -106,6 +108,7 @@ CFLAGS			+= $(CFLAGS_uts)
 CFLAGS			+= -xstrconst
 
 ASFLAGS_XARCH_32	= $(arm_ASFLAGS)
+ASFLAGS_XARCH_64	= $(arm64_ASFLAGS)
 ASFLAGS_XARCH		= $(ASFLAGS_XARCH_$(CLASS))
 
 ASFLAGS			+= $(ASFLAGS_XARCH)
@@ -127,8 +130,10 @@ DEBUG_DEFS_OBJ64	=
 DEBUG_DEFS_DBG64	= -DDEBUG
 DEBUG_DEFS		= $(DEBUG_DEFS_$(BUILD_TYPE))
 
-DEBUG_COND_OBJ32	:sh = echo \\043
+DEBUG_COND_OBJ32	= $(POUND_SIGN)
 DEBUG_COND_DBG32	=
+DEBUG_COND_OBJ64	= $(POUND_SIGN)
+DEBUG_COND_DBG64	=
 
 #
 #	Collect the preprocessor definitions to be associated with *all*
