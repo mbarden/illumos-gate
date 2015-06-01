@@ -11,17 +11,7 @@ more foolish).
 
 So here's where you get started building illumos on ARM.
 
-Step 1) You need to get a build environment set up. There's the easy way and the
-fun way.
-
-Easy way:
-
-cd $HOME
-curl -O https://fingolfin.org/illumos/arm/armtc.tar.gz
-pfexec tar xvzf armtc.tar.gz -C /
-find /opt/armtc
-
-Fun way:
+Step 1) You need to get a build environment set up.
 
 Using a normal i386 on i386 build:
 cd usr/src
@@ -29,8 +19,8 @@ dmake setup
 cd cmd/sgs
 dmake install
 
-mkdir -p /opt/armtc/lib/amd64 /opt/armtc/usr/bin/amd64
-cd /opt/armtc/lib/
+mkdir -p /opt/arm64tc/lib/amd64 /opt/arm64tc/usr/bin/amd64
+cd /opt/arm64tc/lib/
 ln -s amd64 64
 cd ../usr/bin
 ln -s amd64 64
@@ -45,21 +35,21 @@ Then from your proto area, install the following:
  o /lib/libelf.so.1
  o /lib/amd64/libelf.so.1
 
-Now that's all set go grab illumos-arm-extra (git clone
-gitosis@zelgadis.fingolfin.org:illumos-arm-extra.git) and build that. You'll
+Now that's all set go grab illumos-extra (git clone
+https://github.com/jeffpc/illumos-extra.git) and build that. You'll
 need something like:
 
-gmake ARCH=arm STRAP=strap LD_ALTEXEC=/opt/armtc/usr/bin/ld install
+gmake ARCH=arm STRAP=strap LD_ALTEXEC=/opt/arm64tc/usr/bin/ld install
 
 Once that's done, you'll need to fix up the rpath there. so from the root of
 that workspace run:
 
-./tools/setrpath proto-arm/usr/ /opt/armtc/usr/lib:/opt/gcc/4.4.4/lib:/lib:/usr/lib
+./tools/setrpath proto-aarch64/usr/ /opt/arm64tc/usr/lib:/opt/gcc/4.4.4/lib:/lib:/usr/lib
 
-Finally, you can copy all of that into your arm compiler toolchain directory
-(use pfexec / sudo as appropriate):
+Finally, you can copy all of that into your aarch64 compiler toolchain
+directory (use pfexec / sudo as appropriate):
 
-cp -r proto-arm/usr /opt/armtc/
+cp -r proto-aarch64/usr /opt/arm64tc/
 
 Step 2) Set up illumos.sh
 
@@ -71,7 +61,6 @@ export __GNUC="";
 export CW_NO_SHADOW=1
 export MACH=arm;
 export NATIVE_MACH=i386;
-export BUILD64="#"
  
 # Re-set all this MACH-based crud
 REF_PROTO_LIST=$PARENT_WS/usr/src/proto_list_${MACH}; export REF_PROTO_LIST
@@ -80,22 +69,22 @@ PARENT_ROOT=$PARENT_WS/proto/root_$MACH; export PARENT_ROOT
 PKGARCHIVE="${CODEMGR_WS}/packages/${MACH}/nightly"; export PKGARCHIVE
 unset GCC_ROOT GNU_ROOT CW_GCC_DIR
 export i386_GCC_ROOT=/opt/gcc/4.4.4
-export arm_GCC_ROOT=/opt/armtc/usr
+export arm_GCC_ROOT=/opt/arm64tc/usr
 export i386_GNU_ROOT=/usr/sfw
-export arm_GNU_ROOT=/opt/armtc/usr/gnu
+export arm_GNU_ROOT=/opt/arm64tc/usr/gnu
 
 #
 # XXX our gcc isn't called ./usr/bin/gcc fix it up via CW env vars for now.
 #
-export CW_arm_GCC=/opt/armtc/usr/bin/arm-pc-solaris2.11-gcc-4.6.3
+export CW_arm_GCC=/opt/arm64tc/usr/bin/aarch64-illumos-gcc-4.9.2
 
 #
 # XXX We need to set CPP to our specific cpp, not the generic /usr/ccs/lib/cpp
 # as that's rather, well, x86.
 #
-export CPP=/opt/armtc/usr/lib/cpp
-export AW_CPP=/opt/armtc/usr/lib/cpp
-export LD_ALTEXEC=/opt/armtc/usr/bin/ld
+export CPP=/opt/arm64tc/usr/lib/cpp
+export AW_CPP=/opt/arm64tc/usr/lib/cpp
+export LD_ALTEXEC=/opt/arm64tc/usr/bin/ld
 
 Step 3) Start your build engines
 
@@ -120,9 +109,12 @@ Once you have that you can get going. Start off with a resounding:
 
 dmake setup
 
-Following this, you can build the kernel as far as we have it for ARM
+Following this, you can build the kernel as far as we have it for arm &
+arm64:
 
 cd uts; dmake install
+
+XXX: information below is for arm-gate not arm64-gate
 
 You now have a lovely unix and boot_archive pair in bcm2835/unix (Raspberry
 Pi) and qvpb/unix (qemu versatilepb).
