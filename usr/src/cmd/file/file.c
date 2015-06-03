@@ -1006,7 +1006,7 @@ print_elf_machine(int machine)
 		[EM_RCE]		= "RCE",
 		[EM_ARM]		= "ARM",
 		[EM_ALPHA]		= "Alpha",
-		[EM_SH]			= "S/390",
+		[EM_SH]			= "SuperH",
 		[EM_SPARCV9]		= "SPARCV9",
 		[EM_TRICORE]		= "Tricore",
 		[EM_ARC]		= "ARC",
