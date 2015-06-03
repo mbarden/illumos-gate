@@ -1057,9 +1057,10 @@ print_elf_machine(int machine)
 		[EM_OPENRISC]		= "OpenRISC",
 		[EM_ARC_A5]		= "Tangent-A5",
 		[EM_XTENSA]		= "Xtensa",
+		[EM_AARCH64]		= "aarch64",
 	};
 	/* If new machine is added, refuse to compile until we're updated */
-#if EM_NUM != 95
+#if EM_NUM != 184
 #error "Number of known ELF machine constants has changed"
 #endif
 
