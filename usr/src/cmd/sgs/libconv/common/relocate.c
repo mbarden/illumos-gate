@@ -50,6 +50,8 @@ conv_reloc_type(Half mach, Word type, Conv_fmt_flags_t fmt_flags,
 		return (conv_reloc_amd64_type(type, fmt_flags, inv_buf));
 	case EM_ARM:
 		return (conv_reloc_arm_type(type, fmt_flags, inv_buf));
+	case EM_AARCH64:
+		return (conv_reloc_aarch64_type(type, fmt_flags, inv_buf));
 	}
 
 	/* If didn't match a machine type, use integer value */

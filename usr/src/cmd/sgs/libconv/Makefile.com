@@ -44,7 +44,7 @@ COMOBJS=	arch.o			audit.o \
 		globals.o		group.o \
 		lddstub.o		map.o \
 		phdr.o			relocate.o \
-		relocate_arm.o	\
+		relocate_aarch64.o	relocate_arm.o	\
 		relocate_i386.o		relocate_amd64.o \
 		relocate_sparc.o	sections.o \
 		segments.o    		strproc.o \
@@ -66,8 +66,8 @@ BLTOBJS=	arch_msg.o		audit_msg.o \
 		elf_msg.o 		entry_msg.o \
 		globals_msg.o		group_msg.o \
 		map_msg.o		lddstub_msg.o \
-		phdr_msg.o 		relocate_arm_msg.o \
-		relocate_amd64_msg.o \
+		phdr_msg.o 		relocate_aarch64_msg.o \
+		relocate_arm_msg.o	relocate_amd64_msg.o \
 		relocate_i386_msg.o	relocate_sparc_msg.o \
 		sections_msg.o 		segments_msg.o \
 		symbols_msg.o 		symbols_sparc_msg.o \

@@ -317,9 +317,7 @@ ehdr_mach_strings(Conv_fmt_flags_t fmt_flags)
 		MSG_EM_OPENRISC_CF,	MSG_EM_ARC_A5_CF,
 		MSG_EM_XTENSA_CF
 	};
-#if	(EM_NUM != (EM_XTENSA + 1))
-#error	"EM_NUM has grown"
-#endif
+
 	static const conv_ds_msg_t ds_mach_66_94_cf = {
 	    CONV_DS_MSG_INIT(EM_FX66, mach_66_94_cf) };
 	static const conv_ds_msg_t ds_mach_66_94_nf = {
@@ -327,22 +325,41 @@ ehdr_mach_strings(Conv_fmt_flags_t fmt_flags)
 	static const conv_ds_msg_t ds_mach_66_94_dmp = {
 	    CONV_DS_MSG_INIT(EM_FX66, mach_66_94_dmp) };
 
+	static const Msg mach_183_cf[] = {
+		MSG_EM_AARCH64_CF,
+	};
+	static const Msg mach_183_nf[] = {
+		MSG_EM_AARCH64_NF,
+	};
+	static const Msg mach_183_dmp[] = {
+		MSG_EM_AARCH64_CF,
+	};
+	static const conv_ds_msg_t ds_mach_183_cf = {
+	    CONV_DS_MSG_INIT(EM_AARCH64, mach_183_cf) };
+	static const conv_ds_msg_t ds_mach_183_nf = {
+	    CONV_DS_MSG_INIT(EM_AARCH64, mach_183_nf) };
+	static const conv_ds_msg_t ds_mach_183_dmp = {
+	    CONV_DS_MSG_INIT(EM_AARCH64, mach_183_dmp) };
+#if	(EM_NUM != (EM_AARCH64 + 1))
+#error	"EM_NUM has grown"
+#endif
 
 	/* Build NULL terminated return arrays for each string style */
 	static const const conv_ds_t	*ds_cf[] = {
 		CONV_DS_ADDR(ds_mach_0_11_cf), CONV_DS_ADDR(ds_mach_15_22_cf),
 		CONV_DS_ADDR(ds_mach_36_63_cf), CONV_DS_ADDR(ds_mach_66_94_cf),
-		NULL
+		CONV_DS_ADDR(ds_mach_183_cf), NULL
 	};
 	static const const conv_ds_t	*ds_nf[] = {
 		CONV_DS_ADDR(ds_mach_0_11_nf), CONV_DS_ADDR(ds_mach_15_22_nf),
 		CONV_DS_ADDR(ds_mach_36_63_nf), CONV_DS_ADDR(ds_mach_66_94_nf),
-		NULL
+		CONV_DS_ADDR(ds_mach_183_nf), NULL
 	};
 	static const const conv_ds_t	*ds_dmp[] = {
 		CONV_DS_ADDR(ds_mach_0_11_dmp), CONV_DS_ADDR(ds_mach_15_22_dmp),
 		CONV_DS_ADDR(ds_mach_36_63_dmp),
-		CONV_DS_ADDR(ds_mach_66_94_dmp), NULL
+		CONV_DS_ADDR(ds_mach_66_94_dmp), CONV_DS_ADDR(ds_mach_183_dmp),
+		NULL
 	};
 
 

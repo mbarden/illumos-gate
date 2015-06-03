@@ -223,7 +223,8 @@
 @ MSG_EM_ARC_A5_NF			"arc_a5"
 @ MSG_EM_XTENSA_CF		"EM_XTENSA"			# 94
 @ MSG_EM_XTENSA_NF			"xtensa"
-
+@ MSG_EM_AARCH64_CF		"EM_AARCH64"			# 183
+@ MSG_EM_AARCH64_NF		"aarch64"
 
 @ MSG_EI_MAG0_CF		"EI_MAG0"			# 0
 @ MSG_EI_MAG0_NF			"mag0"

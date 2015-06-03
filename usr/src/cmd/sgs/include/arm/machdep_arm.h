@@ -25,13 +25,13 @@ extern "C" {
 #define	M_MACH_32	EM_ARM
 
 #ifdef _ELF64
-#error "THERE IS NO ARM64"
+#define	M_MACH		EM_AARCH64
+#define	M_CLASS		ELFCLASS64
 #else
 #define	M_MACH		EM_ARM
 #define	M_CLASS		ELFCLASS32
 #endif
 
-/* XXXARM This is a SPARC thing, but might end up necessary for v6 v. v7? */
 #define	M_MACHPLUS	M_MACH
 #define	M_FLAGSPLUS	0
 
@@ -45,7 +45,11 @@ extern "C" {
  */
 #define	M_RELOC	Rel
 
+#if defined(_ELF64)
+#define	M_SEGM_ALIGN	ELF_AARCH64_MAXPGSZ
+#else
 #define	M_SEGM_ALIGN	ELF_ARM_MAXPGSZ
+#endif
 
 /* XXXARM: These aren't relevant yet, and are guesswork */
 #define	M_TLSSTATALIGN	0x8
@@ -62,6 +66,16 @@ extern "C" {
 #define	M_REL_SHT_TYPE	SHT_REL
 #define	M_REL_ELF_TYPE	ELF_T_REL
 
+#if	defined(_ELF64)
+#define	M_R_NONE	R_AARCH64_NONE
+#define	M_R_GLOB_DAT	R_AARCH64_GLOB_DAT
+#define	M_R_RELATIVE	R_AARCH64_RELATIVE
+#define	M_R_COPY	R_AARCH64_COPY
+#define	M_R_JMP_SLOT	R_AARCH64_JUMP_SLOT
+#define	M_R_FPTR	R_AARCH64_NONE
+#define	M_R_ARRAYADDR	R_AARCH64_GLOB_DAT
+#define	M_R_NUM		R_AARCH64_NUM
+#else
 #define	M_R_NONE	R_ARM_NONE
 #define	M_R_GLOB_DAT	R_ARM_GLOB_DAT
 #define	M_R_RELATIVE	R_ARM_RELATIVE
@@ -70,6 +84,7 @@ extern "C" {
 #define	M_R_FPTR	R_ARM_NONE
 #define	M_R_ARRAYADDR	R_ARM_GLOB_DAT
 #define	M_R_NUM		R_ARM_NUM
+#endif
 
 #define	M_R_REGISTER	M_R_NONE
 

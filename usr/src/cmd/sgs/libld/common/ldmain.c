@@ -127,6 +127,10 @@ ld_init_target(Lm_list *lml, Half mach)
 		ld_targ = *ld_targ_init_arm();
 		break;
 
+	case EM_AARCH64:
+		ld_targ = *ld_targ_init_aarch64();
+		break;
+
 	default:
 		{
 			Conv_inv_buf_t	inv_buf;

@@ -63,9 +63,9 @@ E_X86_TOOLOBJS =	leb128.o
 L_X86_MACHOBJS32 =	machrel.intel32.o
 L_X86_MACHOBJS64 =	machrel.amd64.o
 
-# Target specific objects (arm)
+# Target specific objects (arm/aarch64)
 L_ARM_MACHOBJS32 =	machrel.arm32.o
-L_ARM_MACHOBJS64 =	# There's no 64bit ARM
+L_ARM_MACHOBJS64 =	machrel.aarch64.o
 
 # All target specific objects rolled together
 E_TOOLOBJS =	$(E_SPARC_TOOLOBJS) \
