@@ -269,7 +269,7 @@ INS.pyfile=	$(INS.file); $(TOUCH) -r $< $@
 # Set BUILD64=# in the environment to disable 64-bit amd64
 # builds on i386 machines.
 
-MACH64_2=	$(MACH:arm=arm64)
+MACH64_2=	$(MACH:arm=aarch64)
 MACH64_1=	$(MACH64_2:sparc=sparcv9)
 MACH64=		$(MACH64_1:i386=amd64)
 
@@ -354,7 +354,7 @@ sparcv9_XARCH=	-m64
 i386_XARCH=
 amd64_XARCH=	-m64 -Ui386 -U__i386
 arm_XARCH=
-arm64_XARCH=	-xarch=arm64
+aarch64_XARCH=	-xarch=aarch64
 
 # assembler '-xarch' flag.  Different from compiler '-xarch' flag.
 sparc_AS_XARCH=		-xarch=v8plus
@@ -362,7 +362,7 @@ sparcv9_AS_XARCH=	-xarch=v9
 i386_AS_XARCH=
 amd64_AS_XARCH=		-xarch=amd64 -P -Ui386 -U__i386
 arm_AS_XARCH=
-arm64_AS_XARCH=
+aarch64_AS_XARCH=
 
 #
 # These flags define what we need to be 'standalone' i.e. -not- part
@@ -379,7 +379,7 @@ NO_SIMD=		-_gcc=-mno-mmx -_gcc=-mno-sse
 i386_STAND_FLAGS=	-_gcc=-ffreestanding $(NO_SIMD)
 amd64_STAND_FLAGS=	-xmodel=kernel $(NO_SIMD)
 arm_STAND_FLAGS=	-_gcc=-ffreestanding
-arm64_STAND_FLAGS=	-_gcc=-ffreestanding
+aarch64_STAND_FLAGS=	-_gcc=-ffreestanding
 
 SAVEARGS=		-Wu,-save_args
 amd64_STAND_FLAGS	+= $(SAVEARGS)
@@ -434,14 +434,14 @@ sparcv9_CFLAGS=	$(sparcv9_XARCH) -dalign $(CCVERBOSE) $(V9ABIWARN) $(CCREGSYM) \
 i386_CFLAGS=	$(i386_XARCH)
 amd64_CFLAGS=	$(amd64_XARCH)
 arm_CFLAGS=	$(arm_XARCH)
-arm64_CFLAGS=	$(arm64_XARCH)
+aarch64_CFLAGS=	$(aarch64_XARCH)
 
 sparc_ASFLAGS=	$(sparc_AS_XARCH)
 sparcv9_ASFLAGS=$(sparcv9_AS_XARCH)
 i386_ASFLAGS=	$(i386_AS_XARCH)
 amd64_ASFLAGS=	$(amd64_AS_XARCH)
 arm_ASFLAGS=	$(arm_AS_XARCH)
-arm64_ASFLAGS=	$(arm64_AS_XARCH)
+aarch64_ASFLAGS=	$(aarch64_AS_XARCH)
 
 #
 sparc_COPTFLAG=		-xO3
@@ -449,7 +449,7 @@ sparcv9_COPTFLAG=	-xO3
 i386_COPTFLAG=		-O
 amd64_COPTFLAG=		-xO3
 arm_COPTFLAG=		-xO3
-arm64_COPTFLAG=	-xO3
+aarch64_COPTFLAG=	-xO3
 
 COPTFLAG= $($(MACH)_COPTFLAG)
 COPTFLAG64= $($(MACH64)_COPTFLAG)
@@ -486,7 +486,7 @@ CTF_FLAGS_arm	= -g $(C99MODE) $(CNOGLOBAL) $(CDWARFSTR)
 
 CTF_FLAGS_sparcv9	= $(CTF_FLAGS_sparc)
 CTF_FLAGS_amd64		= $(CTF_FLAGS_i386)
-CTF_FLAGS_arm64	= $(CTF_FLAGS_arm)
+CTF_FLAGS_aarch64	= $(CTF_FLAGS_arm)
 
 # Sun Studio produces broken userland code when saving arguments.
 $(__GNUC)CTF_FLAGS_amd64 += $(SAVEARGS)
@@ -516,7 +516,7 @@ sparcv9_SPACEFLAG	= -xspace -W0,-Lt
 i386_SPACEFLAG		= -xspace
 amd64_SPACEFLAG		=
 arm_SPACEFLAG		=
-arm64_SPACEFLAG	=
+aarch64_SPACEFLAG	=
 
 SPACEFLAG		= $($(MACH)_SPACEFLAG)
 SPACEFLAG64		= $($(MACH64)_SPACEFLAG)
@@ -531,7 +531,7 @@ sparcv9_IROPTFLAG	= -W2,-xwrap_int
 i386_IROPTFLAG		=
 amd64_IROPTFLAG		=
 arm_IROPTFLAG		=
-arm64_IROPTFLAG	=
+aarch64_IROPTFLAG	=
 
 IROPTFLAG		= $($(MACH)_IROPTFLAG)
 IROPTFLAG64		= $($(MACH64)_IROPTFLAG)
@@ -541,7 +541,7 @@ sparcv9_XREGSFLAG	= -xregs=no%appl
 i386_XREGSFLAG		=
 amd64_XREGSFLAG		=
 arm_XREGSFLAG		=
-arm64_XREGSFLAG	=
+aarch64_XREGSFLAG	=
 
 XREGSFLAG		= $($(MACH)_XREGSFLAG)
 XREGSFLAG64		= $($(MACH64)_XREGSFLAG)
@@ -642,14 +642,14 @@ amd64_CCFLAGS=		$(amd64_XARCH) -compat=5 \
 			-Qoption ccfe -features=no%conststrings \
 			$(CCERRWARN)
 arm_CCFLAGS=		$(CCERRWARN)
-arm64_CCFLAGS=	$(CCERRWARN)
+aarch64_CCFLAGS=	$(CCERRWARN)
 
 sparc_CCOPTFLAG=	-O
 sparcv9_CCOPTFLAG=	-O
 i386_CCOPTFLAG=		-O
 amd64_CCOPTFLAG=	-O
 arm_CCOPTFLAG=		-O
-arm64_CCOPTFLAG=	-O
+aarch64_CCOPTFLAG=	-O
 
 CCOPTFLAG=	$($(MACH)_CCOPTFLAG)
 CCOPTFLAG64=	$($(MACH64)_CCOPTFLAG)
@@ -694,8 +694,8 @@ $(__GNUC64)MAPFILE.NGB_amd64= \
 			$(SRC)/common/mapfiles/gen/amd64_gcc_map.noexeglobs
 MAPFILE.NGB_arm= \
 			$(SRC)/common/mapfiles/gen/arm_gcc_map.noexeglobs
-MAPFILE.NGB_arm64= \
-			$(SRC)/common/mapfiles/gen/arm64_gcc_map.noexeglobs
+MAPFILE.NGB_aarch64= \
+			$(SRC)/common/mapfiles/gen/aarch64_gcc_map.noexeglobs
 MAPFILE.NGB =		$(MAPFILE.NGB_$(MACH))
 
 #
@@ -878,14 +878,14 @@ arm_LINT=		/bin/false
 arm_CTFCONVERT=	$(ONBLD_TOOLS)/bin/$(NATIVE_MACH)/ctfconvert.arm
 arm_CTFMERGE=		$(ONBLD_TOOLS)/bin/$(NATIVE_MACH)/ctfmerge.arm
 
-arm64_CC=		$(ONBLD_TOOLS)/bin/$(NATIVE_MACH)/cw.arm -_gcc
-arm64_CCC=		$(ONBLD_TOOLS)/bin/$(NATIVE_MACH)/cw.arm -_g++
-arm64_CPP=		/usr/ccs/lib/cpp
-arm64_AS=			$(ONBLD_TOOLS)/bin/$(NATIVE_MACH)/aw.arm
-arm64_LD=			/opt/arm64tc/usr/bin/ld
-arm64_LINT=		/bin/false
-arm64_CTFCONVERT=	$(ONBLD_TOOLS)/bin/$(NATIVE_MACH)/ctfconvert.arm
-arm64_CTFMERGE=		$(ONBLD_TOOLS)/bin/$(NATIVE_MACH)/ctfmerge.arm
+aarch64_CC=		$(ONBLD_TOOLS)/bin/$(NATIVE_MACH)/cw.arm -_gcc
+aarch64_CCC=		$(ONBLD_TOOLS)/bin/$(NATIVE_MACH)/cw.arm -_g++
+aarch64_CPP=		/usr/ccs/lib/cpp
+aarch64_AS=			$(ONBLD_TOOLS)/bin/$(NATIVE_MACH)/aw.arm
+aarch64_LD=			/opt/arm64tc/usr/bin/ld
+aarch64_LINT=		/bin/false
+aarch64_CTFCONVERT=	$(ONBLD_TOOLS)/bin/$(NATIVE_MACH)/ctfconvert.arm
+aarch64_CTFMERGE=		$(ONBLD_TOOLS)/bin/$(NATIVE_MACH)/ctfmerge.arm
 
 NATIVECC=		$($(NATIVE_MACH)_CC)
 NATIVECCC=		$($(NATIVE_MACH)_CCC)
@@ -957,7 +957,7 @@ sparcv9_C_PICFLAGS =	-K pic
 i386_C_PICFLAGS =	-K pic
 amd64_C_PICFLAGS =	-K pic
 arm_C_PICFLAGS =	-K pic
-arm64_C_PICFLAGS =	-K pic
+aarch64_C_PICFLAGS =	-K pic
 C_PICFLAGS =		$($(MACH)_C_PICFLAGS)
 C_PICFLAGS64 =		$($(MACH64)_C_PICFLAGS)
 
@@ -966,7 +966,7 @@ sparcv9_C_BIGPICFLAGS =	-K PIC
 i386_C_BIGPICFLAGS =	-K PIC
 amd64_C_BIGPICFLAGS =	-K PIC
 arm_C_BIGPICFLAGS =	-K PIC
-arm64_C_BIGPICFLAGS =	-K PIC
+aarch64_C_BIGPICFLAGS =	-K PIC
 C_BIGPICFLAGS =		$($(MACH)_C_BIGPICFLAGS)
 C_BIGPICFLAGS64 =	$($(MACH64)_C_BIGPICFLAGS)
 
@@ -976,7 +976,7 @@ sparcv9_CC_PICFLAGS =	-KPIC
 i386_CC_PICFLAGS = 	-Kpic
 amd64_CC_PICFLAGS = 	-Kpic
 arm_CC_PICFLAGS =	-Kpic
-arm64_CC_PICFLAGS =	-Kpic
+aarch64_CC_PICFLAGS =	-Kpic
 CC_PICFLAGS =		$($(MACH)_CC_PICFLAGS)
 CC_PICFLAGS64 =		$($(MACH64)_CC_PICFLAGS)
 

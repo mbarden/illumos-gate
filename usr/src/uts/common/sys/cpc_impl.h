@@ -211,8 +211,8 @@ extern hrtime_t tsc_read(void);
 extern hrtime_t arm_gettick(void);
 #define	KCPC_GET_TICK arm_gettick
 #elif __aarch64__
-extern hrtime_t arm64_gettick(void);
-#define	KCPC_GET_TICK arm64_gettick
+extern hrtime_t aarch64_gettick(void);
+#define	KCPC_GET_TICK aarch64_gettick
 #else
 #error "port me"
 #endif /* __sparc */

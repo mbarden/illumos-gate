@@ -414,7 +414,7 @@ static const xarch_table_t xtbl[] = {
 	{ "sparcvis2",	SS12, { "-mcpu=ultrasparc3", "-mvis" } }
 #elif defined(CW_TARGET_arm)
 	{ "generic",	SS12, { "-march=armv7-a", "-mfpu=vfpv3-d16", "-mhard-float" } },
-	{ "arm64",	SS12, { "-Wno-format" } }
+	{ "aarch64",	SS12, { "-Wno-format" } }
 #else
 #error Unknown CW_TARGET
 #endif

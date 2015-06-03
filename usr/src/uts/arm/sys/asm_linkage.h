@@ -56,7 +56,7 @@ extern "C" {
 /*
  * These constants can be used to compute offsets into pointer arrays.
  */
-/* XXX arm64 */
+/* XXX aarch64 */
 #define	CPTRSHIFT	2
 #define	CLONGSHIFT	2
 
