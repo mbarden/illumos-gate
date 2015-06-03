@@ -980,101 +980,83 @@ print_elf_machine(int machine)
 	 * in /usr/include/sys/elf.h.
 	 */
 	static const char *mach_str[EM_NUM] = {
-		"unknown machine",		/* 0 - EM_NONE */
-		"WE32100",			/* 1 - EM_M32 */
-		"SPARC",			/* 2 - EM_SPARC */
-		"80386",			/* 3 - EM_386 */
-		"M68000",			/* 4 - EM_68K */
-		"M88000",			/* 5 - EM_88K */
-		"80486",			/* 6 - EM_486 */
-		"i860",				/* 7 - EM_860 */
-		"MIPS RS3000 Big-Endian",	/* 8 - EM_MIPS */
-		"S/370",			/* 9 - EM_S370 */
-		"MIPS RS3000 Little-Endian",	/* 10 - EM_MIPS_RS3_LE */
-		"MIPS RS6000",			/* 11 - EM_RS6000 */
-		NULL,				/* 12 - EM_UNKNOWN12 */
-		NULL,				/* 13 - EM_UNKNOWN13 */
-		NULL,				/* 14 - EM_UNKNOWN14 */
-		"PA-RISC",			/* 15 - EM_PA_RISC */
-		"nCUBE",			/* 16 - EM_nCUBE */
-		"VPP500",			/* 17 - EM_VPP500 */
-		"SPARC32PLUS",			/* 18 - EM_SPARC32PLUS */
-		"i960",				/* 19 - EM_960 */
-		"PowerPC",			/* 20 - EM_PPC */
-		"PowerPC64",			/* 21 - EM_PPC64 */
-		"S/390",			/* 22 - EM_S390 */
-		NULL,				/* 23 - EM_UNKNOWN23 */
-		NULL,				/* 24 - EM_UNKNOWN24 */
-		NULL,				/* 25 - EM_UNKNOWN25 */
-		NULL,				/* 26 - EM_UNKNOWN26 */
-		NULL,				/* 27 - EM_UNKNOWN27 */
-		NULL,				/* 28 - EM_UNKNOWN28 */
-		NULL,				/* 29 - EM_UNKNOWN29 */
-		NULL,				/* 30 - EM_UNKNOWN30 */
-		NULL,				/* 31 - EM_UNKNOWN31 */
-		NULL,				/* 32 - EM_UNKNOWN32 */
-		NULL,				/* 33 - EM_UNKNOWN33 */
-		NULL,				/* 34 - EM_UNKNOWN34 */
-		NULL,				/* 35 - EM_UNKNOWN35 */
-		"V800",				/* 36 - EM_V800 */
-		"FR20",				/* 37 - EM_FR20 */
-		"RH32",				/* 38 - EM_RH32 */
-		"RCE",				/* 39 - EM_RCE */
-		"ARM",				/* 40 - EM_ARM */
-		"Alpha",			/* 41 - EM_ALPHA */
-		"S/390",			/* 42 - EM_SH */
-		"SPARCV9",			/* 43 - EM_SPARCV9 */
-		"Tricore",			/* 44 - EM_TRICORE */
-		"ARC",				/* 45 - EM_ARC */
-		"H8/300",			/* 46 - EM_H8_300 */
-		"H8/300H",			/* 47 - EM_H8_300H */
-		"H8S",				/* 48 - EM_H8S */
-		"H8/500",			/* 49 - EM_H8_500 */
-		"IA64",				/* 50 - EM_IA_64 */
-		"MIPS-X",			/* 51 - EM_MIPS_X */
-		"Coldfire",			/* 52 - EM_COLDFIRE */
-		"M68HC12",			/* 53 - EM_68HC12 */
-		"MMA",				/* 54 - EM_MMA */
-		"PCP",				/* 55 - EM_PCP */
-		"nCPU",				/* 56 - EM_NCPU */
-		"NDR1",				/* 57 - EM_NDR1 */
-		"Starcore",			/* 58 - EM_STARCORE */
-		"ME16",				/* 59 - EM_ME16 */
-		"ST100",			/* 60 - EM_ST100 */
-		"TINYJ",			/* 61 - EM_TINYJ */
-		"AMD64",			/* 62 - EM_AMD64 */
-		"PDSP",				/* 63 - EM_PDSP */
-		NULL,				/* 64 - EM_UNKNOWN64 */
-		NULL,				/* 65 - EM_UNKNOWN65 */
-		"FX66",				/* 66 - EM_FX66 */
-		"ST9 PLUS",			/* 67 - EM_ST9PLUS */
-		"ST7",				/* 68 - EM_ST7 */
-		"68HC16",			/* 69 - EM_68HC16 */
-		"68HC11",			/* 70 - EM_68HC11 */
-		"68H08",			/* 71 - EM_68HC08 */
-		"68HC05",			/* 72 - EM_68HC05 */
-		"SVX",				/* 73 - EM_SVX */
-		"ST19",				/* 74 - EM_ST19 */
-		"VAX",				/* 75 - EM_VAX */
-		"CRIS",				/* 76 - EM_CRIS */
-		"Javelin",			/* 77 - EM_JAVELIN */
-		"Firepath",			/* 78 - EM_FIREPATH */
-		"ZSP",				/* 79 - EM_ZSP */
-		"MMIX",				/* 80 - EM_MMIX */
-		"HUANY",			/* 81 - EM_HUANY */
-		"Prism",			/* 82 - EM_PRISM */
-		"AVR",				/* 83 - EM_AVR */
-		"FR30",				/* 84 - EM_FR30 */
-		"D10V",				/* 85 - EM_D10V */
-		"D30V",				/* 86 - EM_D30V */
-		"V850",				/* 87 - EM_V850 */
-		"M32R",				/* 88 - EM_M32R */
-		"MN10300",			/* 89 - EM_MN10300 */
-		"MN10200",			/* 90 - EM_MN10200 */
-		"picoJava",			/* 91 - EM_PJ */
-		"OpenRISC",			/* 92 - EM_OPENRISC */
-		"Tangent-A5",			/* 93 - EM_ARC_A5 */
-		"Xtensa"			/* 94 - EM_XTENSA */
+		[EM_NONE]		= "unknown machine",
+		[EM_M32]		= "WE32100",
+		[EM_SPARC]		= "SPARC",
+		[EM_386]		= "80386",
+		[EM_68K]		= "M68000",
+		[EM_88K]		= "M88000",
+		[EM_486]		= "80486",
+		[EM_860]		= "i860",
+		[EM_MIPS]		= "MIPS RS3000 Big-Endian",
+		[EM_S370]		= "S/370",
+		[EM_MIPS_RS3_LE]	= "MIPS RS3000 Little-Endian",
+		[EM_RS6000]		= "MIPS RS6000",
+		[EM_PA_RISC]		= "PA-RISC",
+		[EM_nCUBE]		= "nCUBE",
+		[EM_VPP500]		= "VPP500",
+		[EM_SPARC32PLUS]	= "SPARC32PLUS",
+		[EM_960]		= "i960",
+		[EM_PPC]		= "PowerPC",
+		[EM_PPC64]		= "PowerPC64",
+		[EM_S390]		= "S/390",
+		[EM_V800]		= "V800",
+		[EM_FR20]		= "FR20",
+		[EM_RH32]		= "RH32",
+		[EM_RCE]		= "RCE",
+		[EM_ARM]		= "ARM",
+		[EM_ALPHA]		= "Alpha",
+		[EM_SH]			= "S/390",
+		[EM_SPARCV9]		= "SPARCV9",
+		[EM_TRICORE]		= "Tricore",
+		[EM_ARC]		= "ARC",
+		[EM_H8_300]		= "H8/300",
+		[EM_H8_300H]		= "H8/300H",
+		[EM_H8S]		= "H8S",
+		[EM_H8_500]		= "H8/500",
+		[EM_IA_64]		= "IA64",
+		[EM_MIPS_X]		= "MIPS-X",
+		[EM_COLDFIRE]		= "Coldfire",
+		[EM_68HC12]		= "M68HC12",
+		[EM_MMA]		= "MMA",
+		[EM_PCP]		= "PCP",
+		[EM_NCPU]		= "nCPU",
+		[EM_NDR1]		= "NDR1",
+		[EM_STARCORE]		= "Starcore",
+		[EM_ME16]		= "ME16",
+		[EM_ST100]		= "ST100",
+		[EM_TINYJ]		= "TINYJ",
+		[EM_AMD64]		= "AMD64",
+		[EM_PDSP]		= "PDSP",
+		[EM_FX66]		= "FX66",
+		[EM_ST9PLUS]		= "ST9 PLUS",
+		[EM_ST7]		= "ST7",
+		[EM_68HC16]		= "68HC16",
+		[EM_68HC11]		= "68HC11",
+		[EM_68HC08]		= "68H08",
+		[EM_68HC05]		= "68HC05",
+		[EM_SVX]		= "SVX",
+		[EM_ST19]		= "ST19",
+		[EM_VAX]		= "VAX",
+		[EM_CRIS]		= "CRIS",
+		[EM_JAVELIN]		= "Javelin",
+		[EM_FIREPATH]		= "Firepath",
+		[EM_ZSP]		= "ZSP",
+		[EM_MMIX]		= "MMIX",
+		[EM_HUANY]		= "HUANY",
+		[EM_PRISM]		= "Prism",
+		[EM_AVR]		= "AVR",
+		[EM_FR30]		= "FR30",
+		[EM_D10V]		= "D10V",
+		[EM_D30V]		= "D30V",
+		[EM_V850]		= "V850",
+		[EM_M32R]		= "M32R",
+		[EM_MN10300]		= "MN10300",
+		[EM_MN10200]		= "MN10200",
+		[EM_PJ]			= "picoJava",
+		[EM_OPENRISC]		= "OpenRISC",
+		[EM_ARC_A5]		= "Tangent-A5",
+		[EM_XTENSA]		= "Xtensa",
 	};
 	/* If new machine is added, refuse to compile until we're updated */
 #if EM_NUM != 95
