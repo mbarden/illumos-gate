@@ -399,7 +399,7 @@ ld_perform_outreloc(Rel_desc *orsp, Ofl_desc *ofl, Boolean *remain_seen)
  * value, without reference to the addend.  The other part, implemented as a
  * common do_reloc_* function (with 3 names, based on the linker using it),
  * actually includes the addend and updates the output location. (this code is
- * in uts/arm/krtld).
+ * in uts/arm/aarch32/krtld).
  *
  * This code, given: R_ARM_CALL == (((S + A) | T) - P)
  *
