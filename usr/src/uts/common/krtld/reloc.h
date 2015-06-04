@@ -78,6 +78,16 @@ extern "C" {
 #define	reloc_table		reloc32_table_sparc
 #endif
 
+#elif	defined(DO_RELOC_LIBLD_AARCH64)
+
+#define	DO_RELOC_LIBLD
+#if	defined(_ELF64)
+#define	do_reloc_ld		do64_reloc_ld_aarch64
+#define	reloc_table		reloc64_table_aarch64
+#else
+#error	"XXXARM: Surely this shouldn't ever happen?"
+#endif
+
 #elif	defined(DO_RELOC_LIBLD_ARM)
 
 #define	DO_RELOC_LIBLD
@@ -236,6 +246,11 @@ extern const char	*conv_reloc_386_type(Word);
 
 extern const char	*conv_reloc_SPARC_type(Word);
 #define	CONV_RELOC_TYPE	conv_reloc_SPARC_type
+
+#elif defined(__aarch64__)
+
+extern const char	*conv_reloc_aarch64_type(Word);
+#define	CONV_RELOC_TYPE	conv_reloc_aarch64_type
 
 #elif defined(__arm__)
 

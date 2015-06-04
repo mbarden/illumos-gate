@@ -71,6 +71,10 @@ pics/%_arm_32.o: $(KRTLD_ARM)/%.c
 		$(COMPILE.c) -o $@ -DDO_RELOC_LIBLD $<
 		$(POST_PROCESS_O)
 
+pics/%_arm_64.o: $(KRTLD_AARCH64)/%.c
+		$(COMPILE.c) -o $@ -D_ELF64 -DDO_RELOC_LIBLD $<
+		$(POST_PROCESS_O)
+
 pics/%_x86_32.o: $(KRTLD_I386)/%.c
 		$(COMPILE.c) -o $@ -DDO_RELOC_LIBLD $<
 		$(POST_PROCESS_O)
