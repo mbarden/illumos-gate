@@ -49,6 +49,19 @@
  *     R_AARCH64_ABS64
  */
 
+static Word
+ld_init_rel(Rel_desc *reld, Word *typedata, void *reloc)
+{
+	Rel	*rel = (Rel *)reloc;
+
+	reld->rel_rtype = (Word)ELF_R_TYPE(rel->r_info, M_MACH);
+	reld->rel_roffset = rel->r_offset;
+	reld->rel_raddend = 0;
+	*typedata = (Word)ELF_R_TYPE_DATA(rel->r_info);
+
+	return ((Word)ELF_R_SYM(rel->r_info));
+}
+
 static void
 ld_mach_eflags(Ehdr *ehdr, Ofl_desc *ofl)
 {
@@ -57,6 +70,306 @@ ld_mach_eflags(Ehdr *ehdr, Ofl_desc *ofl)
 	 * flags here, and to bail if we it's wrong.
 	 */
 	ofl->ofl_dehdr->e_flags |= ehdr->e_flags;
+}
+
+static void
+ld_mach_make_dynamic(Ofl_desc *ofl, size_t *cnt)
+{
+	if (!(ofl->ofl_flags & FLG_OF_RELOBJ)) {
+		/* Create this entry if we are going to create a PLT. */
+		if (ofl->ofl_pltcnt > 0)
+			(*cnt)++; /* DT_PLTGOT */
+	}
+}
+
+/* ARGSUSED */
+static Gotndx *
+ld_find_got_ndx(Alist *alp, Gotref gref, Ofl_desc *ofl, Rel_desc *rdesc)
+{
+	Aliste	indx;
+	Gotndx	*gnp;
+
+	if ((gref == GOT_REF_TLSLD) && ofl->ofl_tlsldgotndx)
+		return (ofl->ofl_tlsldgotndx);
+
+	for (ALIST_TRAVERSE(alp, indx, gnp)) {
+		if (gnp->gn_gotref == gref)
+			return (gnp);
+	}
+
+	return (NULL);
+}
+
+static Xword
+ld_calc_got_offset(Rel_desc *rdesc, Ofl_desc *ofl)
+{
+	Os_desc		*osp = ofl->ofl_osgot;
+	Sym_desc	*sdp = rdesc->rel_sym;
+	Xword		gotndx;
+	Gotref		gref;
+	Gotndx		*gnp;
+
+	if (rdesc->rel_flags & FLG_REL_DTLS)
+		gref = GOT_REF_TLSGD;
+	else if (rdesc->rel_flags & FLG_REL_MTLS)
+		gref = GOT_REF_TLSLD;
+	else if (rdesc->rel_flags & FLG_REL_STLS)
+		gref = GOT_REF_TLSIE;
+	else
+		gref = GOT_REF_GENERIC;
+
+	gnp = ld_find_got_ndx(sdp->sd_GOTndxs, gref, ofl, NULL);
+	assert(gnp);
+
+	gotndx = (Xword)gnp->gn_gotndx;
+
+#if 0
+	/* XXX AARCH64: this is from ARM, does it apply? */
+	if ((rdesc->rel_flags & FLG_REL_DTLS) &&
+	    (rdesc->rel_rtype == R_ARM_TLS_DTPOFF32))
+		gotndx++;
+#endif
+
+	return ((Xword)(osp->os_shdr->sh_addr + (gotndx * M_GOT_ENTSIZE)));
+}
+
+/*
+ * Build a single PLT entry.  See the comment for ld_fillin_pltgot() for a
+ * more complete description.
+ */
+/* ARGSUSED */
+static void
+plt_entry(Ofl_desc *ofl, Sym_desc *sdp)
+{
+	uchar_t	*pltent, *gotent;
+	Word	plt_off;
+	Word	got_off;
+	Word	got_disp;
+	Boolean	bswap = (ofl->ofl_flags1 & FLG_OF1_ENCDIFF) != 0;
+	Addr	got_addr, plt_addr;
+
+	got_off = sdp->sd_aux->sa_PLTGOTndx * M_GOT_ENTSIZE;
+	plt_off = M_PLT_RESERVSZ + ((sdp->sd_aux->sa_PLTndx - 1) *
+	    M_PLT_ENTSIZE);
+
+	pltent = (uchar_t *)(ofl->ofl_osplt->os_outdata->d_buf) + plt_off;
+	gotent = (uchar_t *)(ofl->ofl_osgot->os_outdata->d_buf) + got_off;
+
+	/*
+	 * XXX AARCH64: update to spit out aarch64 instructions
+	 */
+	got_addr = ofl->ofl_osgot->os_shdr->sh_addr + got_off;
+	plt_addr = ofl->ofl_osplt->os_shdr->sh_addr + plt_off;
+	got_disp = got_addr - (plt_addr + 8); /* adjusted for %pc offset */
+
+	/* LINTED */
+	*(Word *)gotent = ofl->ofl_osplt->os_shdr->sh_addr;
+	if (bswap)
+		/* LINTED */
+		*(Word *)gotent = ld_bswap_Word(*(Word *)gotent);
+
+	/* add ip, pc, #0 | ...  */
+	/* LINTED */
+	*(Word *)pltent = 0xe28fc600 | ((got_disp & 0xfff00000) >> 20);
+	if (bswap)
+		/* LINTED */
+		*(Word *)pltent = ld_bswap_Word(*(Word *)pltent);
+	pltent += M_PLT_INSSIZE;
+
+	/* add ip, ip, #0 | ... */
+	/* LINTED */
+	*(Word *)pltent = 0xe28cca00 | ((got_disp & 0x000ff000) >> 12);
+	if (bswap)
+		/* LINTED */
+		*(Word *)pltent = ld_bswap_Word(*(Word *)pltent);
+	pltent += M_PLT_INSSIZE;
+
+	/* ldr pc, [ip, #0]! | ...  */
+	/* LINTED */
+	*(Word *)pltent = 0xe5bcf000 | (got_disp & 0x00000fff);
+	if (bswap)
+		/* LINTED */
+		*(Word *)pltent = ld_bswap_Word(*(Word *)pltent);
+	pltent += M_PLT_INSSIZE;
+}
+
+/*
+ * Insert an appropriate dynamic relocation into the output image in the
+ * appropriate relocation section.
+ *
+ * Primarily, this is not particularly target-specific, and involves
+ * calculating the correct offset for the relocation entry to be written, and
+ * accounting for some complicated edge cases.
+ *
+ * Heavily taken from the Intel implementation.
+ */
+static uintptr_t
+ld_perform_outreloc(Rel_desc *orsp, Ofl_desc *ofl, Boolean *remain_seen)
+{
+	Os_desc		*relosp, *osp = NULL;
+	Word		ndx, roffset, value;
+	Rel		rea;
+	char		*relbits;
+	Sym_desc	*sdp, *psym = NULL;
+	Boolean		sectmoved = FALSE;
+
+	sdp = orsp->rel_sym;
+
+	/*
+	 * If the section this relocation is against has been dicarded
+	 * (-zignore), then also discard the relocation itself.
+	 */
+	if ((orsp->rel_isdesc != NULL) && ((orsp->rel_flags &
+	    (FLG_REL_GOT | FLG_REL_BSS | FLG_REL_PLT | FLG_REL_NOINFO)) == 0) &&
+	    (orsp->rel_isdesc->is_flags & FLG_IS_DISCARD)) {
+		DBG_CALL(Dbg_reloc_discard(ofl->ofl_lml, M_MACH, orsp));
+		return (1);
+	}
+
+	/*
+	 * If this is a relocation against a move table, or expanded move
+	 * table, adjust the relocation entries.
+	 */
+	if (RELAUX_GET_MOVE(orsp) != NULL)
+		ld_adj_movereloc(ofl, orsp);
+
+	/*
+	 * If this is a relocation against a section using a partially
+	 * initialized symbol, adjust the embedded symbol info.
+	 *
+	 * The second argument of the am_I_partial() is the value stored at
+	 * the target address to which the relocation is going to be
+	 * applied.
+	 */
+	if (ELF_ST_TYPE(sdp->sd_sym->st_info) == STT_SECTION) {
+		if (ofl->ofl_parsyms &&
+		    (sdp->sd_isc->is_flags & FLG_IS_RELUPD) &&
+		    /* LINTED */
+		    (psym = ld_am_I_partial(orsp, *(Xword *)((uchar_t *)
+		    (orsp->rel_isdesc->is_indata->d_buf) +
+		    orsp->rel_roffset)))) {
+			DBG_CALL(Dbg_move_outsctadj(ofl->ofl_lml, psym));
+			sectmoved = TRUE;
+		}
+	}
+
+	value = sdp->sd_sym->st_value;
+
+	if (orsp->rel_flags & FLG_REL_GOT) {
+		osp = ofl->ofl_osgot;
+		roffset = (Word)ld_calc_got_offset(orsp, ofl);
+	} else if (orsp->rel_flags & FLG_REL_PLT) {
+		/*
+		 * Note that relocations for PLTs actually cause a relocation
+		 * against the GOT
+		 */
+		osp = ofl->ofl_osplt;
+		roffset = (Word) (ofl->ofl_osgot->os_shdr->sh_addr) +
+		    sdp->sd_aux->sa_PLTGOTndx * M_GOT_ENTSIZE;
+
+		plt_entry(ofl, sdp);
+	} else if (orsp->rel_flags & FLG_REL_BSS) {
+		/*
+		 * This must be an R_AARCH64_COPY.  For these set the
+		 * roffset to point to the new symbol's location.
+		 */
+		osp = ofl->ofl_isbss->is_osdesc;
+		roffset = (Word)value;
+	} else {
+		osp = RELAUX_GET_OSDESC(orsp);
+
+		/*
+		 * Calculate virtual offset of reference point; equals offset
+		 * into section + vaddr of section for loadable sections, or
+		 * offset plus section displacement for nonloadable
+		 * sections.
+		 */
+		roffset = orsp->rel_roffset +
+		    (Off)_elf_getxoff(orsp->rel_isdesc->is_indata);
+		if (!(ofl->ofl_flags & FLG_OF_RELOBJ))
+			roffset += orsp->rel_isdesc->is_osdesc->
+			    os_shdr->sh_addr;
+	}
+
+	if ((osp == NULL) || ((relosp = osp->os_relosdesc) == NULL)) {
+		relosp = ofl->ofl_osrel;
+	}
+
+	/*
+	 * Assign the symbols index for the output relocation.  If the
+	 * relocation refers to a SECTION symbol then it's index is based upon
+	 * the output sections symbols index.  Otherwise the index can be
+	 * derived from the symbols index itself.
+	 */
+	if (orsp->rel_rtype == R_AARCH64_RELATIVE) {
+		ndx = STN_UNDEF;
+	} else if ((orsp->rel_flags & FLG_REL_SCNNDX) ||
+	    (ELF_ST_TYPE(sdp->sd_sym->st_info) == STT_SECTION)) {
+		if (sectmoved == FALSE) {
+			/*
+			 * Check for a null input section.  This can occur if
+			 * this relocation references a symbol generated by
+			 * sym_add_sym()
+			 */
+			if ((sdp->sd_isc != NULL) &&
+			    (sdp->sd_isc->is_osdesc != NULL)) {
+				ndx = sdp->sd_isc->is_osdesc->os_identndx;
+			} else {
+				ndx = sdp->sd_shndx;
+			}
+		} else {
+			ndx = ofl->ofl_parexpnndx;
+		}
+	} else {
+		ndx = sdp->sd_symndx;
+	}
+
+	/*
+	 * If we have a replacement value for the relocation target, put it in
+	 * place now.
+	 */
+	if (orsp->rel_flags & FLG_REL_NADDEND) {
+		Xword	addend = orsp->rel_raddend;
+		uchar_t	*addr;
+
+		/*
+		 * Get the address of the data item we nede to modify.
+		 */
+		addr = (uchar_t *)((uintptr_t)orsp->rel_roffset +
+		    (uintptr_t)_elf_getxoff(orsp->rel_isdesc->is_indata));
+		addr += (uintptr_t)RELAUX_GET_OSDESC(orsp)->os_outdata->d_buf;
+		if (ld_reloc_targval_set(ofl, orsp, addr, addend) == 0) {
+			return (S_ERROR);
+		}
+	}
+
+	relbits = (char *)relosp->os_outdata->d_buf;
+
+	rea.r_info = ELF_R_INFO(ndx, orsp->rel_rtype);
+	rea.r_offset = roffset;
+	DBG_CALL(Dbg_reloc_out(ofl, ELF_DBG_LD, SHT_REL, &rea, relosp->os_name,
+	    ld_reloc_sym_name(orsp)));
+
+	/* Assert we haven't walked off the end of our relocation table. */
+	assert(relosp->os_szoutrels <= relosp->os_shdr->sh_size);
+
+	(void) memcpy((relbits + relosp->os_szoutrels),
+	    (char *)&rea, sizeof (Rel));
+	relosp->os_szoutrels += sizeof (Rel);
+
+	/*
+	 * Determine if this relocation is against a non-writable, allocatable
+	 * section.  If so we may need to provide a text relocation
+	 * diagnostic.
+	 *
+	 * Note that relocations against the .plt (R_AARCH64_JUMP_SLOT)
+	 * actually result in modifications to the .got
+	 */
+	if (orsp->rel_rtype == R_AARCH64_JUMP_SLOT)
+		osp = ofl->ofl_osgot;
+
+	ld_reloc_remain_entry(orsp, osp, ofl, remain_seen);
+	return (1);
 }
 
 static const uchar_t nullfunc_tmpl[] = {
@@ -156,13 +469,13 @@ ld_targ_init_aarch64(void)
 			.ff_execfill	= NULL,
 		},
 		.t_mr = {
-			.mr_reloc_table			= NULL,
-			.mr_init_rel			= NULL,
+			.mr_reloc_table			= reloc_table,
+			.mr_init_rel			= ld_init_rel,
 			.mr_mach_eflags			= ld_mach_eflags,
-			.mr_mach_make_dynamic		= NULL,
+			.mr_mach_make_dynamic		= ld_mach_make_dynamic,
 			.mr_mach_update_odynamic	= NULL,
 			.mr_calc_plt_addr		= NULL,
-			.mr_perform_outreloc		= NULL,
+			.mr_perform_outreloc		= ld_perform_outreloc,
 			.mr_do_activerelocs		= NULL,
 			.mr_add_outrel			= NULL,
 			.mr_reloc_register		= NULL,
