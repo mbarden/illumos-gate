@@ -70,7 +70,7 @@ const Rel_entry reloc_table[R_AARCH64_NUM] = {
 	[R_AARCH64_CONDBR19]		= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
 
 	[R_AARCH64_JUMP26]		= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
-	[R_AARCH64_CALL26]		= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_AARCH64_CALL26]		= { 0x03ffffff, FLG_RE_SIGN|FLG_RE_VERIFY|FLG_RE_PCREL, 4, 2, 0 },
 	[R_AARCH64_LDST16_ABS_LO12_NC]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
 	[R_AARCH64_LDST32_ABS_LO12_NC]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
 	[R_AARCH64_LDST64_ABS_LO12_NC]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
@@ -108,3 +108,112 @@ const Rel_entry reloc_table[R_AARCH64_NUM] = {
 	[R_AARCH64_TLSDESC]		= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
 	[R_AARCH64_IRELATIVE]		= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
 };
+
+/*
+ * Write a single relocated value to its reference location. We assume we
+ * wish to add the relocation amount, value, to the value of the adress
+ * already present at the offset.
+ *
+ * NAME			VALUE	FIELD	CALCULATION
+ * R_AARCH64_NONE	0	none	none
+ * R_AARCH64_ABS64      257	?	S + A
+ * R_AARCH64_CALL26	283	imm26	S + A - P
+ *
+ * This is from Tables 4-6 & 4-11, ELF for the ARM 64-bit architecture
+ * (AArch64), ARM IHI 0056B.
+ *
+ * Relocation calculations:
+ *
+ * CALCULATION uses the following notation:
+ *	A	the addend used
+ *	P	the place being relocated
+ *
+ * The calculations in the CALCULATION column are assumed to have been
+ * performed before calling this function except for the addition of the
+ * addresses in the instructions.
+ */
+#if defined(_KERNEL)
+#define	lml	0		/* Needed by arglist of REL_ERR_* macros */
+int
+do_reloc_krtld(uchar_t rtype, uchar_t *off, Xword *value, const char *sym,
+    const char *file)
+#elif defined(DO_RELOC_LIBLD)
+int
+do_reloc_ld(Rel_desc *rdesc, uchar_t *off, Xword *value,
+    rel_desc_sname_func_t rel_desc_sname_func, const char *file,
+    int bswap, void *lml)
+#else
+int
+do_reloc_rtld(uchar_t rtype, uchar_t *off, Xword *value,
+    const char *sym, const char *file, void *lml)
+#endif
+{
+	const Rel_entry *rep;
+#ifdef DO_RELOC_LIBLD
+#define	sym (*rel_desc_sname_func)(rdesc)
+	uint_t		rtype = rdesc->rel_rtype;
+#endif
+	Xword		base = 0, uvalue = 0;
+
+	rep = &reloc_table[rtype];
+
+	switch (rep->re_fsize) {
+	case 4:
+#if defined(DORELOC_NATIVE)
+		base = *(Xword *)off;
+#else
+		if (bswap) {
+			uchar_t *b_bytes = (uchar_t *)&base;
+			UL_ASSIGN_BSWAP_WORD(b_bytes, off);
+		} else {
+			uchar_t *b_bytes = (uchar_t *)&base;
+			UL_ASSIGN_WORD(b_bytes, off);
+		}
+#endif
+		break;
+	default:
+		REL_ERR_UNSUPSZ(lml, file, sym, rtype, rep->re_fsize);
+		abort();
+		return (0);
+	}
+
+	uvalue = *value;
+	uvalue >>= rep->re_bshift;
+
+	/*
+	 * Masked values are masked both in and out
+	 * for convenience, base is trunced.
+	 *
+	 * XXXARM: This of course means that any masked relocation is a
+	 * replacement not masked addition.  I sure _hope_ that's true...
+	 */
+	if (rep->re_mask != 0) {
+		uvalue &= rep->re_mask;
+		base &= ~rep->re_mask;
+	}
+
+	/* Write the result */
+	switch (rep->re_fsize) {
+	case 4:
+#if defined(DORELOC_NATIVE)
+		*(Xword *)off = (Xword)(base + uvalue);
+#else
+		if (bswap) {
+			uchar_t *b_bytes = (uchar_t *)&base;
+			base += uvalue;
+			UL_ASSIGN_BSWAP_WORD(off, b_bytes);
+		} else {
+			uchar_t *b_bytes = (uchar_t *)&base;
+			base += uvalue;
+			UL_ASSIGN_WORD(off, b_bytes);
+		}
+#endif
+		break;
+	}
+
+
+	return (1);
+#ifdef DO_RELOC_LIBLD
+#undef sym
+#endif
+}

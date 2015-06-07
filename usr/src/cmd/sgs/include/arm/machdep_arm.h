@@ -59,14 +59,14 @@ extern "C" {
 #define	M_SEGM_AORIGIN	M_SEGM_ORIGIN
 
 /* Make common relocation information transparent to common code */
+#if defined(_ELF64)
 #define	M_REL_DT_TYPE	DT_REL
 #define	M_REL_DT_SIZE	DT_RELSZ
 #define	M_REL_DT_ENT	DT_RELENT
 #define	M_REL_DT_COUNT	DT_RELCOUNT
-#define	M_REL_SHT_TYPE	SHT_REL
+#define	M_REL_SHT_TYPE	SHT_RELA
 #define	M_REL_ELF_TYPE	ELF_T_REL
 
-#if	defined(_ELF64)
 #define	M_R_NONE	R_AARCH64_NONE
 #define	M_R_GLOB_DAT	R_AARCH64_GLOB_DAT
 #define	M_R_RELATIVE	R_AARCH64_RELATIVE
@@ -76,6 +76,13 @@ extern "C" {
 #define	M_R_ARRAYADDR	R_AARCH64_GLOB_DAT
 #define	M_R_NUM		R_AARCH64_NUM
 #else
+#define	M_REL_DT_TYPE	DT_REL
+#define	M_REL_DT_SIZE	DT_RELSZ
+#define	M_REL_DT_ENT	DT_RELENT
+#define	M_REL_DT_COUNT	DT_RELCOUNT
+#define	M_REL_SHT_TYPE	SHT_REL
+#define	M_REL_ELF_TYPE	ELF_T_REL
+
 #define	M_R_NONE	R_ARM_NONE
 #define	M_R_GLOB_DAT	R_ARM_GLOB_DAT
 #define	M_R_RELATIVE	R_ARM_RELATIVE
