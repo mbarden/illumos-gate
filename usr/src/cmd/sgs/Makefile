@@ -194,7 +194,7 @@ XRDIRS=		. \
 		../../head \
 		../../uts/common/krtld \
 		../../uts/common/sys \
-		../../uts/arm/krtld \
+		../../uts/arm/aarch32/krtld \
 		../../uts/sparc/sys \
 		../../uts/sparc/krtld \
 		../../uts/intel/ia32/krtld \
