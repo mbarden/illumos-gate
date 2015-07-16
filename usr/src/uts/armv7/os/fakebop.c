@@ -158,7 +158,7 @@ bop_panic(const char *msg)
  * Normally we'd use vsnprintf, but that includes sys/systm.h which requires
  * almost every header platform header in the world. Also, we're using hex,
  * because hex is cool. Actually, we're really using it because it means we can
- * bitshift instead of divide. There is no integer division in ARMv6 natively.
+ * bitshift instead of divide. Integer division is optional on ARMv7-A.
  * Oops.
  */
 static char *
@@ -759,8 +759,8 @@ fakebop_bootprops_init(void)
 	 * Here are some things that we make up, just like our i86pc brethren.
 	 */
 	fakebop_setprop_32("stdout", 0);
-	fakebop_setprop_string("mfg-name", "ARMv6");
-	fakebop_setprop_string("impl-arch-name", "ARMv6");
+	fakebop_setprop_string("mfg-name", "ARMv7");
+	fakebop_setprop_string("impl-arch-name", "ARMv7");
 }
 
 /*
