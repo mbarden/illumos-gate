@@ -753,8 +753,8 @@ main(int argc, char *argv[])
 	/*
 	 * gas for 32-bit arm defaults to a much older version of the arm
 	 * architecture than we can really support. Because of that, we instead
-	 * opt to make sure that we set the minimum architecture to armv6k, the
-	 * minimum of what we actually support.
+	 * opt to make sure that we set the minimum architecture to armv7-a
+	 * with 16 VFPv3 regs, the minimum of what we actually support.
 	 */
 #if defined(AW_TARGET_arm)
 	if (as64) {

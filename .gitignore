@@ -9034,8 +9034,8 @@ usr/src/ucbcmd/users/users
 usr/src/ucbcmd/vipw/vipw
 usr/src/ucbcmd/whereis/whereis
 usr/src/ucbcmd/whoami/whoami
-usr/src/uts/armv6/bcm2835/unix/debug32
-usr/src/uts/armv6/bcm2835/unix/obj32
+usr/src/uts/armv7/bcm2836/unix/debug32
+usr/src/uts/armv7/bcm2836/unix/obj32
 usr/src/uts/common/avs/ns/rdc/rdc_prot.h
 usr/src/uts/common/gssapi/gssd_prot.c
 usr/src/uts/common/gssapi/gssd_prot.h
