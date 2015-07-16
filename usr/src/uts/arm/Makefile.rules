@@ -18,7 +18,7 @@
 # Kernel runtime-linker
 #
 KRTLD_INC_PATH	= -I$(UTSBASE)/common/krtld -I$(UTSBASE)/arm/sys
-KRTLD_INC_PATH	+= -I$(UTSBASE)/arm/krtld
+KRTLD_INC_PATH	+= -I$(UTSBASE)/arm/aarch32/krtld
 
 KRTLD_CPPFLAGS_32	= -DELF_TARGET_ARM
 KRTLD_CPPFLAGS		= $(KRTLD_CPPFLAGS_$(CLASS)) -D_KRTLD
@@ -27,11 +27,11 @@ $(OBJS_DIR)/%.o:	$(UTSBASE)/common/krtld/%.c
 	$(COMPILE.c) $(KRTLD_INC_PATH) $(KRTLD_CPPFLAGS) -o $@ $<
 	$(CTFCONVERT_O)
 
-$(OBJS_DIR)/%.o:	$(UTSBASE)/arm/krtld/%.c
+$(OBJS_DIR)/%.o:	$(UTSBASE)/arm/aarch32/krtld/%.c
 	$(COMPILE.c) $(KRTLD_INC_PATH) $(KRTLD_CPPFLAGS) -o $@ $<
 	$(CTFCONVERT_O)
 
-$(OBJS_DIR)/%.o:	$(UTSBASE)/arm/krtld/%.s
+$(OBJS_DIR)/%.o:	$(UTSBASE)/arm/aarch32/krtld/%.s
 	$(COMPILE.s) $(KRTLD_INC_PATH) $(KRTLD_CPPFLAGS) -o $@ $<
 	$(CTFCONVERT_O)
 
