@@ -107,9 +107,9 @@ const Rel_entry reloc_table[R_ARM_NUM] = {
 	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_TARGET2 */
 	/* XXXARM: This is wrong, but also working.  Ouch. */
 	{ 0x7fffffff, FLG_RE_NOTREL,  4, 0, 31 }, /* R_ARM_PREL31 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_MOVW_ABS_NC */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_MOVT_ABS */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_MOVW_PREL_NC */
+	{ 0x000f0fff, 0, 4, 0, 16 }, /* R_ARM_MOVW_ABS_NC */
+	{ 0x000f0fff, FLG_RE_VERIFY, 4, 16, 16 }, /* R_ARM_MOVT_ABS */
+	{ 0x000f0fff, FLG_RE_PCREL, 4, 0, 16 }, /* R_ARM_MOVW_PREL_NC */
 	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_MOVT_PREL */
 	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_THM_MOVW_ABS_NC */
 	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_THM_MOVT_ABS */
@@ -225,6 +225,9 @@ const Rel_entry reloc_table[R_ARM_NUM] = {
  * R_ARM_CALL		28	imm24	((S + A) | T) - P   XXX: Shifting
  * R_ARM_JUMP24		29	imm24	((S + A) | T) - P   XXX: Shifting
  * R_ARM_PREL31		42	imm31	((S + A) | T) - P   XXX: Shifting
+ * R_ARM_MOVW_ABS_NC	43	imm	(S + A) | T
+ * R_ARM_MOVT_ABS	44	imm	S + A
+ * R_ARM_MOVW_PREL_NC	45	imm	((S + A) | T) - P
  *
  * This is from Table 4-8, ELF for the ARM Architecture, ARM IHI 0044E,
  * current through ABI release 2.09, issued 30th November 2012.
@@ -300,6 +303,15 @@ do_reloc_rtld(uchar_t rtype, uchar_t *off, Xword *value,
 		uvalue -= 8;
 
 	uvalue >>= rep->re_bshift;
+
+	switch (rtype) {
+	case R_ARM_MOVW_ABS_NC:
+	case R_ARM_MOVT_ABS:
+	case R_ARM_MOVW_PREL_NC:
+		/* split the 16-bit immediate into imm4 and imm12 */
+		uvalue = ((uvalue & 0x0000f000) << 4) | (uvalue & 0x00000fff);
+		break;
+	}
 
 	/*
 	 * Masked values are masked both in and out
