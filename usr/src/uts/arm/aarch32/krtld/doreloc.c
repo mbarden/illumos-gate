@@ -62,149 +62,155 @@
  * to work for my test cases because the compiler is being uncommonly kind.
  */
 const Rel_entry reloc_table[R_ARM_NUM] = {
-	{ 0, FLG_RE_NOTREL, 0, 0, 0 }, /* R_ARM_NONE */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_PC24 */
-	{ 0, FLG_RE_NOTREL, 4, 0, 0 }, /* R_ARM_ABS32 */
-	{ 0, FLG_RE_PCREL,  4, 0, 0 }, /* R_ARM_REL32 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_LDR_PC_G0 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_ABS16 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_ABS12 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_THM_ABS5 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_ABS8 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_SBREL32 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_THM_CALL */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_THM_PC8 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_BREL_ADJ */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_TLS_DESC */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* Obsolete R_ARM_THM_SWI8 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* Obsolete R_ARM_XPC25 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* Obsolete R_ARM_THM_XPC22 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_TLS_DTPMOD32 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_TLS_DTPOFF32 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_TLS_TPOFF32 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_COPY */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_GLOB_DAT */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_JUMP_SLOT */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_RELATIVE */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_GOTOFF32 */
-	{ 0, FLG_RE_SEGREL|FLG_RE_PCREL, 4, 0, 0 }, /* R_ARM_BASE_PREL */
-	{ 0, FLG_RE_GOTADD, 4, 0, 0 }, /* R_ARM_GOT_BREL */
-	/* Deprecated R_ARM_PLT32 */
-	{ 0x00ffffff, FLG_RE_PLTREL|FLG_RE_PCREL, 4, 2, 0 },
-	{ 0x00ffffff, FLG_RE_PCREL, 4, 2, 0 }, /* R_ARM_CALL */
-	{ 0x00ffffff, FLG_RE_PCREL, 4, 2, 0 }, /* R_ARM_JUMP24 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_THM_JUMP24 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_BASE_ABS */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* Obsolete R_ARM_ALU_PCREL_7_0 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* Obsolete R_ARM_ALU_PCREL_15_8 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* Obsolete R_ARM_ALU_PCREL_23_15 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* Deprecated R_ARM_LDR_SBREL_11_0_NC */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* Deprecated R_ARM_ALU_SBREL_19_12_NC */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* Deprecated R_ARM_ALU_SBREL_27_20_CK */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_TARGET1 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* Deprecated R_ARM_SBREL31 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_V4BX */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_TARGET2 */
+	[R_ARM_NONE]		= { 0, FLG_RE_NOTREL, 0, 0, 0 },
+	[R_ARM_PC24]		= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_ABS32]		= { 0, FLG_RE_NOTREL, 4, 0, 0 },
+	[R_ARM_REL32]		= { 0, FLG_RE_PCREL,  4, 0, 0 },
+	[R_ARM_LDR_PC_G0]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_ABS16]		= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_ABS12]		= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_THM_ABS5]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_ABS8]		= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_SBREL32]		= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_THM_CALL]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_THM_PC8]		= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_BREL_ADJ]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_TLS_DESC]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_TLS_DTPMOD32]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_TLS_DTPOFF32]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_TLS_TPOFF32]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_COPY]		= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_GLOB_DAT]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_JUMP_SLOT]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_RELATIVE]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_GOTOFF32]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_BASE_PREL]	= { 0, FLG_RE_SEGREL|FLG_RE_PCREL, 4, 0, 0 },
+	[R_ARM_GOT_BREL]	= { 0, FLG_RE_GOTADD, 4, 0, 0 },
+	[R_ARM_CALL]		= { 0x00ffffff, FLG_RE_PCREL, 4, 2, 0 },
+	[R_ARM_JUMP24]		= { 0x00ffffff, FLG_RE_PCREL, 4, 2, 0 },
+	[R_ARM_THM_JUMP24]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_BASE_ABS]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_TARGET1]		= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_V4BX]		= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_TARGET2]		= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
 	/* XXXARM: This is wrong, but also working.  Ouch. */
-	{ 0x7fffffff, FLG_RE_NOTREL,  4, 0, 31 }, /* R_ARM_PREL31 */
-	{ 0x000f0fff, FLG_RE_NOTREL, 4, 0, 16 }, /* R_ARM_MOVW_ABS_NC */
-	{ 0x000f0fff, FLG_RE_VERIFY, 4, 16, 16 }, /* R_ARM_MOVT_ABS */
-	{ 0x000f0fff, FLG_RE_PCREL, 4, 0, 16 }, /* R_ARM_MOVW_PREL_NC */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_MOVT_PREL */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_THM_MOVW_ABS_NC */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_THM_MOVT_ABS */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_THM_MOVW_PREL_NC */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_THM_MOVT_PREL */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_R_ARM_THM_JUMP19 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_THM_JUMP6 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_THM_ALU_PREL_11_0 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_THM_PC12 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_ABS32_NOI */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_REL32_NOI */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_ALU_PC_G0_NC */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_ALU_PC_G0 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_ALU_PC_G1_NC */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_ALU_PC_G1 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_ALU_PC_G2 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_LDR_PC_G1 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_LDR_PC_G2 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_LDRS_PC_G0 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_LDRS_PC_G1 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_LDRS_PC_G2 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_LDC_PC_G0 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_LDC_PC_G1 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_LDC_PC_G2 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_ALU_SB_G0_NC */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_ALU_SB_G0 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_ALU_SB_G1_NC */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_ALU_SB_G1 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_ALU_SB_G2 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_LDR_SB_G0 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_LDR_SB_G1 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_LDR_SB_G2 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_LDRS_SB_G0 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_LDRS_SB_G1 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_LDRS_SB_G2 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_LDC_SB_G0 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_LDC_SB_G1 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_LDC_SB_G2 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_MOVW_BREL_NC */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_MOVT_BREL */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_MOVW_BREL */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_THM_MOVW_BREL_NC */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_THM_MOVT_BREL */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_THM_MOVW_BREL */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_TLS_GOTDESC */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_TLS_CALL */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_TLS_DESCSEQ */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_THM_TLS_CALL */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_PLT32_ABS */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_GOT_ABS */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_GOT_PREL */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_GOT_BREL12 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_GOTOFF12 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_GOTRELAX */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* Deprecated R_ARM_GNU_VTENTRY */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* Deprecated R_ARM_GNU_VTINHERIT */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_THM_JUMP11 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_THM_JUMP8 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_TLS_GD32 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_TLS_LDM32 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_TLS_LDO32 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_TLS_IE32 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_TLS_LE32 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_TLS_LDO12 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_TLS_LE12 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_TLS_IE12GP */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_PRIVATE_0 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_PRIVATE_1 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_PRIVATE_2 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_PRIVATE_3 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_PRIVATE_4 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_PRIVATE_5 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_PRIVATE_6 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_PRIVATE_7 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_PRIVATE_8 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_PRIVATE_9 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_PRIVATE_10 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_PRIVATE_11 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_PRIVATE_12 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_PRIVATE_13 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_PRIVATE_14 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_PRIVATE_15 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* Obsolete R_ARM_ME_TOO */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_THM_TLS_DESCSEQ16 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_THM_TLS_DESCSEQ32 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_THM_GOT_BREL12 */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* Unallocated */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* Unallocated */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* Unallocated */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* Unallocated */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* Unallocated */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* Unallocated */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* Unallocated */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* Unallocated */
-	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_IRELATIVE */
+	[R_ARM_PREL31]		= { 0x7fffffff, FLG_RE_NOTREL,  4, 0, 31 },
+	[R_ARM_MOVW_ABS_NC]	= { 0x000f0fff, FLG_RE_NOTREL, 4, 0, 16 },
+	[R_ARM_MOVT_ABS]	= { 0x000f0fff, FLG_RE_VERIFY, 4, 16, 16 },
+	[R_ARM_MOVW_PREL_NC]	= { 0x000f0fff, FLG_RE_PCREL, 4, 0, 16 },
+	[R_ARM_MOVT_PREL]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_THM_MOVW_ABS_NC]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_THM_MOVT_ABS]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_THM_MOVW_PREL_NC]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_THM_MOVT_PREL]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_THM_JUMP19]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_THM_JUMP6]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_THM_ALU_PREL_11_0]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_THM_PC12]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_ABS32_NOI]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_REL32_NOI]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_ALU_PC_G0_NC]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_ALU_PC_G0]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_ALU_PC_G1_NC]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_ALU_PC_G1]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_ALU_PC_G2]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_LDR_PC_G1]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_LDR_PC_G2]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_LDRS_PC_G0]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_LDRS_PC_G1]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_LDRS_PC_G2]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_LDC_PC_G0]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_LDC_PC_G1]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_LDC_PC_G2]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_ALU_SB_G0_NC]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_ALU_SB_G0]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_ALU_SB_G1_NC]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_ALU_SB_G1]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_ALU_SB_G2]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_LDR_SB_G0]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_LDR_SB_G1]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_LDR_SB_G2]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_LDRS_SB_G0]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_LDRS_SB_G1]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_LDRS_SB_G2]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_LDC_SB_G0]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_LDC_SB_G1]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_LDC_SB_G2]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_MOVW_BREL_NC]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_MOVT_BREL]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_MOVW_BREL]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_THM_MOVW_BREL_NC]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_THM_MOVT_BREL]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_THM_MOVW_BREL]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_TLS_GOTDESC]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_TLS_CALL]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_TLS_DESCSEQ]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_THM_TLS_CALL]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_PLT32_ABS]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_GOT_ABS]		= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_GOT_PREL]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_GOT_BREL12]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_GOTOFF12]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_GOTRELAX]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_THM_JUMP11]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_THM_JUMP8]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_TLS_GD32]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_TLS_LDM32]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_TLS_LDO32]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_TLS_IE32]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_TLS_LE32]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_TLS_LDO12]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_TLS_LE12]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_TLS_IE12GP]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_PRIVATE_0]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_PRIVATE_1]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_PRIVATE_2]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_PRIVATE_3]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_PRIVATE_4]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_PRIVATE_5]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_PRIVATE_6]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_PRIVATE_7]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_PRIVATE_8]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_PRIVATE_9]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_PRIVATE_10]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_PRIVATE_11]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_PRIVATE_12]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_PRIVATE_13]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_PRIVATE_14]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_PRIVATE_15]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_THM_TLS_DESCSEQ16]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_THM_TLS_DESCSEQ32]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_THM_GOT_BREL12]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_IRELATIVE]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+
+	/* depricated */
+	[R_ARM_ALU_SBREL_19_12_NC]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_ALU_SBREL_27_20_CK]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_GNU_VTENTRY]		= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_GNU_VTINHERIT]		= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_LDR_SBREL_11_0_NC]	= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_PLT32]			= { 0x00ffffff,
+	    FLG_RE_PLTREL|FLG_RE_PCREL, 4, 2, 0 },
+	[R_ARM_SBREL31]			= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+
+	/* obsolete */
+	[R_ARM_ALU_PCREL_15_8]		= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_ALU_PCREL_23_15]		= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_ALU_PCREL_7_0]		= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_ME_TOO]			= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_THM_SWI8]		= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_THM_XPC22]		= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[R_ARM_XPC25]			= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+
+	/* unallocated */
+	[132]				= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[133]				= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[134]				= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[135]				= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[136]				= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[137]				= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[138]				= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
+	[139]				= { 0, FLG_RE_NOTSUP, 0, 0, 0 },
 };
 
 
