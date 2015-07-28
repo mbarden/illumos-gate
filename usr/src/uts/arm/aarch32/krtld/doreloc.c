@@ -107,7 +107,7 @@ const Rel_entry reloc_table[R_ARM_NUM] = {
 	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_TARGET2 */
 	/* XXXARM: This is wrong, but also working.  Ouch. */
 	{ 0x7fffffff, FLG_RE_NOTREL,  4, 0, 31 }, /* R_ARM_PREL31 */
-	{ 0x000f0fff, 0, 4, 0, 16 }, /* R_ARM_MOVW_ABS_NC */
+	{ 0x000f0fff, FLG_RE_NOTREL, 4, 0, 16 }, /* R_ARM_MOVW_ABS_NC */
 	{ 0x000f0fff, FLG_RE_VERIFY, 4, 16, 16 }, /* R_ARM_MOVT_ABS */
 	{ 0x000f0fff, FLG_RE_PCREL, 4, 0, 16 }, /* R_ARM_MOVW_PREL_NC */
 	{ 0, FLG_RE_NOTSUP, 0, 0, 0 }, /* R_ARM_MOVT_PREL */
