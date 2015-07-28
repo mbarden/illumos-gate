@@ -171,24 +171,28 @@ armv7_text_flush(void)
 	mrc	p15, 0, r0, c1, c0, 0
 	orr	r0, #(ARM_SCTLR_I)
 	mcr	p15, 0, r0, c1, c0, 0
+	bx	lr
 	SET_SIZE(armv7_icache_enable)
 
 	ENTRY(armv7_dcache_enable)
 	mrc	p15, 0, r0, c1, c0, 0
 	orr	r0, #(ARM_SCTLR_C)
 	mcr	p15, 0, r0, c1, c0, 0
+	bx	lr
 	SET_SIZE(armv7_dcache_enable)
 
 	ENTRY(armv7_icache_disable)
 	mrc	p15, 0, r0, c1, c0, 0
 	bic	r0, #(ARM_SCTLR_I)
 	mcr	p15, 0, r0, c1, c0, 0
+	bx	lr
 	SET_SIZE(armv7_icache_disable)
 
 	ENTRY(armv7_dcache_disable)
 	mrc	p15, 0, r0, c1, c0, 0
 	bic	r0, #(ARM_SCTLR_C)
 	mcr	p15, 0, r0, c1, c0, 0
+	bx	lr
 	SET_SIZE(armv7_dcache_disable)
 
 	ENTRY(armv7_icache_inval)
