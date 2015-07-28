@@ -41,6 +41,9 @@ extern "C" {
 #define	ARM_EXCPT_FIQ		7
 #define	ARM_EXCPT_NUM		8
 
+#define	ARM_SCTLR_C		0x0004
+#define	ARM_SCTLR_I		0x1000
+
 #ifdef __cplusplus
 }
 #endif

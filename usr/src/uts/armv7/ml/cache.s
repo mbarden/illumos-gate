@@ -22,6 +22,7 @@
  */
 
 #include <sys/asm_linkage.h>
+#include <sys/cpu_asm.h>
 
 #if defined(lint) || defined(__lint)
 
@@ -168,25 +169,25 @@ armv7_text_flush(void)
 
 	ENTRY(armv7_icache_enable)
 	mrc	p15, 0, r0, c1, c0, 0
-	orr	r0, #0x1000
+	orr	r0, #(ARM_SCTLR_I)
 	mcr	p15, 0, r0, c1, c0, 0
 	SET_SIZE(armv7_icache_enable)
 
 	ENTRY(armv7_dcache_enable)
 	mrc	p15, 0, r0, c1, c0, 0
-	orr	r0, #0x4
+	orr	r0, #(ARM_SCTLR_C)
 	mcr	p15, 0, r0, c1, c0, 0
 	SET_SIZE(armv7_dcache_enable)
 
 	ENTRY(armv7_icache_disable)
 	mrc	p15, 0, r0, c1, c0, 0
-	bic	r0, #0x1000
+	bic	r0, #(ARM_SCTLR_I)
 	mcr	p15, 0, r0, c1, c0, 0
 	SET_SIZE(armv7_icache_disable)
 
 	ENTRY(armv7_dcache_disable)
 	mrc	p15, 0, r0, c1, c0, 0
-	bic	r0, #0x4
+	bic	r0, #(ARM_SCTLR_C)
 	mcr	p15, 0, r0, c1, c0, 0
 	SET_SIZE(armv7_dcache_disable)
 
