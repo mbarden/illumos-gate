@@ -36,14 +36,14 @@ cd ../usr/bin
 ln -s amd64 64
 
 Then from your proto area, install the following:
- o /usr/bin/ld
- o /usr/bin/amd64/ld
- o /lib/libld.so.4
- o /lib/amd64/libld.so.4
- o /lib/liblddbg.so.4
- o /lib/amd64/liblddb.so.4
- o /lib/libelf.so.1
- o /lib/amd64/libelf.so.1
+cp {,/opt/armtc/}usr/bin/ld
+cp {,/opt/armtc/}usr/bin/amd64/ld
+cp {,/opt/armtc/}lib/libld.so.4
+cp {,/opt/armtc/}lib/amd64/libld.so.4
+cp {,/opt/armtc/}lib/liblddbg.so.4
+cp {,/opt/armtc/}lib/amd64/liblddbg.so.4
+cp {,/opt/armtc/}lib/libelf.so.1
+cp {,/opt/armtc/}lib/amd64/libelf.so.1
 
 Now that's all set go grab illumos-arm-extra (git clone
 gitosis@zelgadis.fingolfin.org:illumos-arm-extra.git) and build that. You'll
