@@ -159,7 +159,7 @@ Booting on real hardware is a bit more involved.
 
   c) Create a cmdline.txt on the partition:
 
-	kernel /platform/bcm2835/kernel/unix -Bconsole=uart
+	kernel /platform/bcm2836/kernel/unix -Bconsole=uart
 
   d) Place Raspberry Pi firmware onto the partition.  You can download
      latest firmware from
