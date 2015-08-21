@@ -189,6 +189,7 @@ arm_cpuid_mvfr1()
 	cmp	r1, #0				/* icache == B_FALSE */
 	orrne	r0, r0, #1
 	mcr	p15, 2, r0, c0, c0, 0		/* write CSSELR */
+	isb
 	mrc	p15, 1, r0, c0, c0, 0		/* read selected CCSIDR */
 	bx	lr
 	SET_SIZE(arm_cpuid_ccsidr)
