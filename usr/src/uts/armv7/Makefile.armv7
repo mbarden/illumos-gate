@@ -39,8 +39,8 @@ UNAME_M		= $(PLATFORM)
 #	change over time.
 #
 IMPLEMENTATIONS = \
-	bcm2836 \
-	qve
+	bcm2836
+#	qve
 
 UNIX_DIR	= $(UTSBASE)/$(PLATFORM)/bcm2836/unix
 GENLIB_DIR	= $(UTSBASE)/arm/genunix
