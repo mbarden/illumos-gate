@@ -60,11 +60,13 @@ extern void armv7_dcache_disable(void);
 extern void armv7_dcache_enable(void);
 extern void armv7_dcache_inval(void);
 extern void armv7_dcache_flush(void);
+extern void armv7_dcache_clean_inval(void);
 
 extern void armv7_icache_disable(void);
 extern void armv7_icache_enable(void);
 extern void armv7_icache_inval(void);
 
+extern void armv7_tlb_sync(void);
 #ifdef __cplusplus
 }
 #endif

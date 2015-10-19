@@ -143,7 +143,7 @@ fakeload_selfmap(atag_header_t *chain)
 	aim.aim_header.ah_tag = ATAG_ILLUMOS_MAPPING;
 	aim.aim_paddr = 0x7000;
 	aim.aim_vaddr = aim.aim_paddr;
-	aim.aim_plen = 0x3000;
+	aim.aim_plen = 0x4000;
 	aim.aim_vlen = aim.aim_plen;
 	aim.aim_mapflags = PF_R | PF_X | PF_LOADER;
 	atag_append(chain, &aim.aim_header);
@@ -605,6 +605,13 @@ fakeload_init(void *ident, void *ident2, void *atag)
 
 	fakeload_backend_init();
 	fakeload_puts("Hello from the loader\n");
+	fakeload_ultostr((uintptr_t)ident);
+	fakeload_puts("\n");
+	fakeload_ultostr((uintptr_t)ident2);
+	fakeload_puts("\n");
+	fakeload_ultostr((uintptr_t)atag);
+	fakeload_puts("\n");
+
 	initrd = (atag_initrd_t *)atag_find(chain, ATAG_INITRD2);
 	if (initrd == NULL)
 		fakeload_panic("missing the initial ramdisk\n");
@@ -693,10 +700,9 @@ fakeload_init(void *ident, void *ident2, void *atag)
 
 	/* Cache disable */
 	FAKELOAD_DPRINTF("Flushing and disabling caches\n");
-	armv7_dcache_flush();
 	armv7_dcache_disable();
-	armv7_dcache_inval();
 	armv7_icache_disable();
+	armv7_dcache_clean_inval();
 	armv7_icache_inval();
 
 	/* Program the page tables */
@@ -715,6 +721,7 @@ fakeload_init(void *ident, void *ident2, void *atag)
 	armv7_icache_enable();
 
 	/* we should never come back */
+	FAKELOAD_DPRINTF("leaving forever\n");
 	fakeload_exec(ident, ident2, chain, unix_start);
 	fakeload_panic("hit the end of the world\n");
 }

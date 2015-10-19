@@ -19,7 +19,7 @@
  */
 
 #include <sys/asm_linkage.h>
-
+#include <sys/cpu_asm.h>
 /*
  * We put _start into the .text.init section so we can more easily shove it
  * at the front of the .text.
