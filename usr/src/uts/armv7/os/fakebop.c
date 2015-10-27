@@ -896,7 +896,7 @@ _fakebop_start(void *zeros, uint32_t machid, void *tagstart)
 
 	fakebop_getatags(tagstart);
 	bcons_init(bip->bi_cmdline);
-	bop_printf(NULL, "_fakebop_start");
+	bop_printf(NULL, "_fakebop_start\n");
 	/* Now that we have a console, we can usefully handle traps */
 	trap_table[ARM_EXCPT_RESET] = primordial_reset;
 	trap_table[ARM_EXCPT_UNDINS] = primordial_undef;

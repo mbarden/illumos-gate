@@ -85,9 +85,9 @@
 	cps	#(CPU_MODE_SVC)
 
 	/* Enable highvecs (moves the base of the exception vector) */
-	mrc	p15, 0, r3, c1, c0, 0
+	mrc	CP15_sctlr(r3)
 	orr	r3, r3, #(1 << 13)
-	mcr	p15, 0, r3, c1, c0, 0
+	mcr	CP15_sctlr(r3)
 
 	/* invoke machine specific setup */
 	bl	_mach_start
@@ -159,15 +159,16 @@ _locore_start(struct boot_syscalls *sysp, struct bootops *bop)
 	 * Set up our curthread pointer
 	 */
 	ldr	r0, =t0
-	mcr	p15, 0, r0, c13, c0, 4
+	mcr	CP15_TPIDRPRW(r0)
 
 	/*
-	 * Go ahead now and enable the L1 I/D caches.  
+	 * Go ahead now and enable the L1 I/D caches.
+	 * XXX didn't we already do this in fakeload?	
 	 */
-	mrc	p15, 0, r0, c1, c0, 0
-	orr	r0, #0x04	/* D-cache */
-	orr	r0, #0x1000	/* I-cache */
-	mcr	p15, 0, r0, c1, c0, 0
+	mrc	CP15_sctlr(r0)
+	orr	r0, #(ARM_SCTLR_C)	/* D-cache */
+	orr	r0, #(ARM_SCTLR_I)	/* I-cache */
+	mcr	CP15_sctlr(r0)
 
 	/*
 	 * mlsetup() takes the struct regs as an argument. main doesn't take

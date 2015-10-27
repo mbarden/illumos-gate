@@ -55,10 +55,10 @@ fakeload_unaligned_enable(void)
 	 * Fix up alignment by turning off A and by turning on U.
 	 */
 	ENTRY(fakeload_unaligned_enable)
-	mrc	p15, 0, r0, c1, c0, 0
+	mrc	CP15_sctlr(r0)
 	orr	r0, #0x400000	/* U = 1 */
 	bic	r0, r0, #2	/* A = 0 */
-	mcr	p15, 0, r0, c1, c0, 0
+	mcr	CP15_sctlr(r0)
 	bx	lr
 	SET_SIZE(fakeload_unaligned_enable);
 
@@ -70,7 +70,7 @@ fakeload_get_ttbcr(void)
 
 #else	/* __lint */
 	ENTRY(fakeload_get_ttbcr)
-	mrc	p15, 0, r0, c2, c0, 2
+	mrc	CP15_TTBCR(r0)
 	bx	lr
 	SET_SIZE(fakeload_get_ttbcr)
 #endif	/* __lint */
@@ -168,17 +168,17 @@ fakeload_pt_setup(uintptr_t ptroot)
 	ENTRY(fakeload_pt_setup)
 	/* use TTBR0 only (should already be true) */
 	mov	r1, #0
-	mcr	p15, 0, r1, c2, c0, 2
+	mcr	CP15_TTBCR(r1)
 
 	/* set domain 0 to manager mode */
 	mov	r1, #3
-	mcr	p15, 0, r1, c3, c0, 0
+	mcr	CP15_DACR(r1)
 
 	/* set TTBR0 to page table root */
 	orr	r0, r0, #0x18		/* Outer WB, no WA Cachable */
 	orr	r0, r0, #0x2		/* Sharable */
 	orr	r0, r0, #0x1		/* Inner Cachable */
-	mcr	p15, 0, r0, c2, c0, 0
+	mcr	CP15_TTBR0(r0)
 
 	dsb
 	isb

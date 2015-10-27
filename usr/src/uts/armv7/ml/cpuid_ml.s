@@ -20,6 +20,7 @@
  */
 
 #include <sys/asm_linkage.h>
+#include <sys/cpu_asm.h>
 
 #if defined(lint) || defined(__lint)
 
@@ -94,72 +95,72 @@ arm_cpuid_mvfr1()
 #else	/* __lint */
 
 	ENTRY(arm_cpuid_midr)
-	mrc	p15, 0, r0, c0, c0, 0
+	mrc	CP15_MIDR(r0)
 	bx	lr
 	SET_SIZE(arm_cpuid_midr)
 
 	ENTRY(arm_cpuid_pfr0)
-	mrc	p15, 0, r0, c0, c1, 0
+	mrc	CP15_IDPFR0(r0)
 	bx	lr
 	SET_SIZE(arm_cpuid_pfr0)
 
 	ENTRY(arm_cpuid_pfr1)
-	mrc	p15, 0, r0, c0, c1, 1
+	mrc	CP15_IDPFR1(r0)
 	bx	lr
 	SET_SIZE(arm_cpuid_pfr1)
 
 	ENTRY(arm_cpuid_dfr0)
-	mrc	p15, 0, r0, c0, c1, 2
+	mrc	CP15_IDDFR0(r0)
 	bx	lr
 	SET_SIZE(arm_cpuid_dfr0)
 
 	ENTRY(arm_cpuid_mmfr0)
-	mrc	p15, 0, r0, c0, c1, 4
+	mrc	CP15_IDMMFR0(r0)
 	bx	lr
 	SET_SIZE(arm_cpuid_mmfr0)
 
 	ENTRY(arm_cpuid_mmfr1)
-	mrc	p15, 0, r0, c0, c1, 5
+	mrc	CP15_IDMMFR1(r0)
 	bx	lr
 	SET_SIZE(arm_cpuid_mmfr1)
 
 	ENTRY(arm_cpuid_mmfr2)
-	mrc	p15, 0, r0, c0, c1, 6
+	mrc	CP15_IDMMFR2(r0)
 	bx	lr
 	SET_SIZE(arm_cpuid_mmfr2)
 
 	ENTRY(arm_cpuid_mmfr3)
-	mrc	p15, 0, r0, c0, c1, 7
+	mrc	CP15_IDMMFR3(r0)
 	bx	lr
 	SET_SIZE(arm_cpuid_mmfr3)
 
 	ENTRY(arm_cpuid_isar0)
-	mrc	p15, 0, r0, c0, c2, 0
+	mrc	CP15_IDISAR0(r0)
 	bx	lr
 	SET_SIZE(arm_cpuid_isar0)
 
 	ENTRY(arm_cpuid_isar1)
-	mrc	p15, 0, r0, c0, c2, 1
+	mrc	CP15_IDISAR1(r0)
 	bx	lr
 	SET_SIZE(arm_cpuid_isar1)
 
 	ENTRY(arm_cpuid_isar2)
-	mrc	p15, 0, r0, c0, c2, 2
+	mrc	CP15_IDISAR2(r0)
 	bx	lr
 	SET_SIZE(arm_cpuid_isar2)
 
 	ENTRY(arm_cpuid_isar3)
-	mrc	p15, 0, r0, c0, c2, 3
+	mrc	CP15_IDISAR3(r0)
 	bx	lr
 	SET_SIZE(arm_cpuid_isar3)
 
 	ENTRY(arm_cpuid_isar4)
-	mrc	p15, 0, r0, c0, c2, 4
+	mrc	CP15_IDISAR4(r0)
 	bx	lr
 	SET_SIZE(arm_cpuid_isar4)
 
 	ENTRY(arm_cpuid_isar5)
-	mrc	p15, 0, r0, c0, c2, 5
+	mrc	CP15_IDISAR5(r0)
 	bx	lr
 	SET_SIZE(arm_cpuid_isar5)
 
@@ -180,7 +181,7 @@ arm_cpuid_mvfr1()
 #endif /* __lint */
 
 	ENTRY(arm_cpuid_clidr)
-	mrc	p15, 1, r0, c0, c0, 1
+	mrc	CP15_read_clidr(r0)
 	bx	lr
 	SET_SIZE(arm_cpuid_clidr)
 
@@ -188,8 +189,8 @@ arm_cpuid_mvfr1()
 	lsl	r0, r0, #1
 	cmp	r1, #0				/* icache == B_FALSE */
 	orrne	r0, r0, #1
-	mcr	p15, 2, r0, c0, c0, 0		/* write CSSELR */
+	mcr	CP15_write_cssr(r0)		/* write CSSELR */
 	isb
-	mrc	p15, 1, r0, c0, c0, 0		/* read selected CCSIDR */
+	mrc	CP15_read_csidr(r0)		/* read selected CCSIDR */
 	bx	lr
 	SET_SIZE(arm_cpuid_ccsidr)
