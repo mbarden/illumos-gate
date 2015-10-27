@@ -15,8 +15,6 @@
 
 	.file	"cache.s"
 
-/* XXXARM: rework cache/tlb maintenance functions to handle ARMv7 */
-
 /*
  * Cache and memory barrier operations
  */
@@ -138,6 +136,14 @@ armv7_icache_enable(void)
 {}
 
 void
+armv7_bpred_disable(void)
+{}
+
+void
+armv7_bpred_enable(void)
+{}
+
+void
 armv7_dcache_disable(void)
 {}
 
@@ -186,6 +192,22 @@ armv7_text_flush(void)
 	isb
 	bx	lr
 	SET_SIZE(armv7_dcache_enable)
+
+	ENTRY(armv7_bpred_enable)
+	mrc	CP15_sctlr(r0)
+	orr	r0, #(ARM_SCTLR_Z)
+	mcr	CP15_sctlr(r0)
+	isb
+	bx	lr
+	SET_SIZE(armv7_bpred_enable)
+
+	ENTRY(armv7_bpred_disable)
+	mrc	CP15_sctlr(r0)
+	bic	r0, #(ARM_SCTLR_Z)
+	mcr	CP15_sctlr(r0)
+	isb
+	bx	lr
+	SET_SIZE(armv7_bpred_enable)
 
 	ENTRY(armv7_icache_disable)
 	mrc	CP15_sctlr(r0)
@@ -258,8 +280,6 @@ Skip:
 
 Finished:
 	dsb
-@	mov	r0, #0
-@	mcr	CP15_write_cssr(r0)		@ write the Cache Size selection register
 	ldmfd	sp!, {r4-r11, lr}
 	bx	lr
 	SET_SIZE(armv7_dcache_clean_inval)

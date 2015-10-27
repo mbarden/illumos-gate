@@ -20,6 +20,11 @@
 
 #include <sys/asm_linkage.h>
 #include <sys/cpu_asm.h>
+
+	.arch_extension virt
+	.arch_extension idiv
+	.arch_extension sec
+	.arch_extension mp
 /*
  * We put _start into the .text.init section so we can more easily shove it
  * at the front of the .text.
@@ -60,6 +65,92 @@ fakeload_unaligned_enable(void)
 #endif	/* __lint */
 
 #if defined(__lint)
+fakeload_get_ttbcr(void)
+{}
+
+#else	/* __lint */
+	ENTRY(fakeload_get_ttbcr)
+	mrc	p15, 0, r0, c2, c0, 2
+	bx	lr
+	SET_SIZE(fakeload_get_ttbcr)
+#endif	/* __lint */
+
+#if defined(__lint)
+fakeload_get_sctlr(void)
+{}
+
+#else	/* __lint */
+	ENTRY(fakeload_get_sctlr)
+	mrc	CP15_sctlr(r0)
+	bx	lr
+	SET_SIZE(fakeload_get_sctlr)
+#endif	/* __lint */
+
+#if defined(__lint)
+fakeload_get_actlr(void)
+{}
+
+#else	/* __lint */
+	ENTRY(fakeload_get_actlr)
+	mrc	CP15_actlr(r0)
+	bx	lr
+	SET_SIZE(fakeload_get_actlr)
+#endif	/* __lint */
+
+#if defined(__lint)
+fakeload_get_cpsr(void)
+{}
+
+#else	/* __lint */
+	ENTRY(fakeload_get_cpsr)
+	mrs	r0, cpsr
+	bx	lr
+	SET_SIZE(fakeload_get_cpsr)
+#endif	/* __lint */
+
+#if defined(__lint)
+fakeload_get_spsr(void)
+{}
+
+#else	/* __lint */
+	ENTRY(fakeload_get_spsr)
+	mrs	r0, spsr
+	bx	lr
+	SET_SIZE(fakeload_get_spsr)
+#endif	/* __lint */
+
+#if defined(__lint)
+fakeload_leave_hyp_mode(void)
+{}
+
+#else	/* __lint */
+	ENTRY(fakeload_leave_hyp_mode)
+	mrs	r0, cpsr
+	and	r1, r0, #(CPU_MODE_MASK)
+	teq	r1, #(CPU_MODE_HYP)
+	bxne	lr
+	mrs	r1, sp_hyp
+	msr	sp_svc, r1
+	bic	r0, r0, #(CPU_MODE_MASK)
+	orr	r0, r0, #(CPU_MODE_SVC)
+	msr	spsr_hyp, r0
+	msr	elr_hyp, lr
+	eret
+	SET_SIZE(fakeload_leave_hyp_mode)
+#endif	/* __lint */
+
+#if defined(__lint)
+fakeload_eret(void)
+{}
+
+#else	/* __lint */
+	ENTRY(fakeload_eret)
+	msr	elr_hyp, lr
+	eret
+	SET_SIZE(fakeload_eret)
+#endif	/* __lint */
+
+#if defined(__lint)
 
 fakeload_pt_setup(uintptr_t ptroot)
 {}
@@ -88,6 +179,9 @@ fakeload_pt_setup(uintptr_t ptroot)
 	orr	r0, r0, #0x2		/* Sharable */
 	orr	r0, r0, #0x1		/* Inner Cachable */
 	mcr	p15, 0, r0, c2, c0, 0
+
+	dsb
+	isb
 	bx	lr
 	SET_SIZE(fakeload_pt_setup)
 
@@ -106,16 +200,21 @@ fakeload_mmu_enable(void)
 	 * Enable the MMU (bit 0).
 	 */
 	ENTRY(fakeload_mmu_enable)
-	mrc	p15, 0, r0, c1, c0, 0
+	mrc	CP15_sctlr(r0)
 	orr	r0, #0x1		/* enable MMU */
-	mcr	p15, 0, r0, c1, c0, 0
+	mcr	CP15_sctlr(r0)
+	dsb
+	isb
+	mcr	CP15_TLBIALL(r0)		@ invalidate tlb
+	mcr	CP15_BPIALL(r0)			@ Invalidate btc
 	bx	lr
 	SET_SIZE(fakeload_mmu_enable)
 #endif	/* __lint */
 
 
 	ENTRY(fakeload_exec)
+	mov	r12, lr
 	blx	r3
 	/* We should never execute this. If we do we'll go back to a panic */
-	bx	lr
+	bx	r12
 	SET_SIZE(fakeload_exec)

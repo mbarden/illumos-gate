@@ -546,6 +546,9 @@ fakeload_create_map(armpte_t *pt, atag_illumos_mapping_t *aimp)
 	fakeload_puts("-");
 	fakeload_ultostr(aimp->aim_vlen);
 	fakeload_puts("\n");
+	fakeload_puts("mapflags\n");
+	fakeload_ultostr(aimp->aim_mapflags);
+	fakeload_puts("\n");
 #endif /* MAP_DEBUG */
 
 	/*
@@ -611,6 +614,10 @@ fakeload_init(void *ident, void *ident2, void *atag)
 	fakeload_puts("\n");
 	fakeload_ultostr((uintptr_t)atag);
 	fakeload_puts("\n");
+
+	fakeload_puts("Trying to leave hyp_mode...\n");
+	fakeload_leave_hyp_mode();
+	fakeload_puts("left hyp_mode\n");
 
 	initrd = (atag_initrd_t *)atag_find(chain, ATAG_INITRD2);
 	if (initrd == NULL)
@@ -709,11 +716,9 @@ fakeload_init(void *ident, void *ident2, void *atag)
 	FAKELOAD_DPRINTF("programming cp15 regs\n");
 	fakeload_pt_setup((uintptr_t)pt_addr);
 
-
 	/* MMU Enable */
 	FAKELOAD_DPRINTF("see you on the other side\n");
 	fakeload_mmu_enable();
-
 	FAKELOAD_DPRINTF("why helo thar\n");
 
 	/* Renable caches */

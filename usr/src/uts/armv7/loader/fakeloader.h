@@ -51,6 +51,7 @@ extern void fakeload_backend_addmaps(atag_header_t *);
 /*
  * ASM operations
  */
+extern void fakeload_leave_hyp_mode(void);
 extern void fakeload_unaligned_enable(void);
 extern void fakeload_mmu_enable(void);
 extern void fakeload_pt_setup(uintptr_t);
@@ -66,7 +67,16 @@ extern void armv7_icache_disable(void);
 extern void armv7_icache_enable(void);
 extern void armv7_icache_inval(void);
 
+extern void armv7_bpred_disable(void);
+extern void armv7_bpred_enable(void);
+
 extern void armv7_tlb_sync(void);
+extern uintptr_t fakeload_get_ttbcr(void);
+extern uintptr_t fakeload_get_sctlr(void);
+extern uintptr_t fakeload_get_actlr(void);
+extern uintptr_t fakeload_get_cpsr(void);
+extern uintptr_t fakeload_get_spsr(void);
+extern void fakeload_eret(void);
 #ifdef __cplusplus
 }
 #endif

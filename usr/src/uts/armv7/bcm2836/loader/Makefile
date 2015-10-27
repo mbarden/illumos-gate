@@ -49,7 +49,7 @@ CLEANFILES	+= $(OBJECTS)
 CLOBBERFILES	= $(CLEANFILES) $(LOADER_BIN)
 
 CFLAGS 		+= $(CCVERBOSE) \
-		-DELF_TARGET_ARM
+		-DELF_TARGET_ARM #-_gcc=-march=armv7ve #-DMAP_DEBUG
 
 CERRWARN	+= -_gcc=-Wno-parentheses
 CERRWARN	+= -_gcc=-Wno-uninitialized
