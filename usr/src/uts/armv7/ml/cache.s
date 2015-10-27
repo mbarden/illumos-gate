@@ -232,8 +232,8 @@ armv7_text_flush(void)
 	bx	lr
 	SET_SIZE(armv7_icache_inval)
 
-@	ENTRY(iter_by_sw)
-	ENTRY(armv7_dcache_clean_inval)
+	/* based on ARM Architecture Reference Manual */
+	ENTRY(iter_by_sw)
 	stmfd	sp!, {r4-r11, lr}
 	mov	r6, r0
 	mrc	CP15_read_clidr(r11)		@ Read CLIDR
@@ -266,8 +266,7 @@ cache_index:
 cache_way:
 	orr	r0, r10, r9, lsl r5		@ factor in the way number and cache number into R0
 	orr	r0, r0, r7, lsl r2		@ factor in the index number
-@	blx	r6				@ clean x by set/way
-	mcr	CP15_DCCISW(r0)
+	blx	r6				@ clean x by set/way
 	subs	r9, r9, #1			@ decrement the way number
 	bge	cache_way
 	subs	r7, r7, #1			@ decrement the index
@@ -282,8 +281,12 @@ Finished:
 	dsb
 	ldmfd	sp!, {r4-r11, lr}
 	bx	lr
-	SET_SIZE(armv7_dcache_clean_inval)
-@	SET_SIZE(iter_by_sw)
+	SET_SIZE(iter_by_sw)
+
+	ENTRY(dcache_clean_inval_sw)
+	mcr	CP15_DCCISW(r0)
+	bx	lr
+	SET_SIZE(dcache_inval_sw)
 
 	ENTRY(dcache_inval_sw)
 	mcr	CP15_DCISW(r0)
@@ -295,11 +298,18 @@ Finished:
 	bx	lr
 	SET_SIZE(dcache_clean_sw)
 
-	/* based on ARM Architecture Reference Manual */
+	ENTRY(armv7_dcache_clean_inval)
+	stmfd	sp!, {lr}
+	adr	r0, dcache_clean_inval_sw
+	bl	iter_by_sw
+	ldmfd	sp!, {lr}
+	bx	lr
+	SET_SIZE(armv7_dcache_clean_inval)
+
 	ENTRY(armv7_dcache_inval)		@ BROKEN
 	stmfd	sp!, {lr}
 	adr	r0, dcache_inval_sw
-@	bl	iter_by_sw
+	bl	iter_by_sw
 	ldmfd	sp!, {lr}
 	bx	lr
 	SET_SIZE(armv7_dcache_inval)
@@ -308,7 +318,7 @@ Finished:
 	ENTRY(armv7_dcache_flush)		@ aka. "clean" BROKEN
 	stmfd	sp!, {lr}
 	adr	r0, dcache_clean_sw
-@	bl	iter_by_sw
+	bl	iter_by_sw
 	ldmfd	sp!, {lr}
 	bx	lr
 	SET_SIZE(armv7_dcache_flush)
