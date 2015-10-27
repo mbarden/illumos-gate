@@ -43,6 +43,17 @@ typedef struct arm_cpuid_cache {
 	uint32_t acc_size;
 } arm_cpuid_cache_t;
 
+typedef struct arm_ctr {
+	uint8_t act_format : 3;
+	uint8_t act_res1 : 1;
+	uint8_t act_cwg : 4;
+	uint8_t act_erg : 4;
+	uint8_t act_dminline : 4;
+	uint8_t act_l1lp : 2;
+	uint16_t act_res2 : 10;
+	uint8_t act_iminline : 4;
+} arm_ctr_t;
+
 typedef struct arm_cpuid {
 	uint32_t ac_ident;
 	uint32_t ac_pfr[2];
@@ -52,7 +63,10 @@ typedef struct arm_cpuid {
 	uint32_t ac_fpident;
 	uint32_t ac_mvfr[2];
 	uint32_t ac_clidr;
-
+	union {
+		uint32_t acu_ctr_reg;
+		arm_ctr_t acu_ctr;
+	} ac_ctru;
 	/*
 	 * ARM supports 7 levels of caches.  Each level can have separate
 	 * I/D caches or a unified cache.  We keep track of all these as a
@@ -63,6 +77,9 @@ typedef struct arm_cpuid {
 	uint32_t ac_ccsidr[2][7];
 	arm_cpuid_cache_t ac_caches[2][7];
 } arm_cpuid_t;
+
+#define	ac_ctr_reg	ac_ctru.acu_ctr_reg
+#define	ac_ctr		ac_ctru.acu_ctr
 
 extern uint32_t arm_cpuid_midr();
 extern uint32_t arm_cpuid_pfr0();
@@ -84,6 +101,7 @@ extern uint32_t arm_cpuid_mvfr0();
 extern uint32_t arm_cpuid_mvfr1();
 
 extern uint32_t arm_cpuid_clidr();
+extern uint32_t arm_cpuid_ctr();
 extern uint32_t arm_cpuid_ccsidr(uint32_t level, boolean_t icache);
 
 #ifdef __cplusplus

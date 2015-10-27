@@ -96,10 +96,10 @@ cpuid_fill_onecache(arm_cpuid_t *cpd, int level, boolean_t icache)
 	cache->acc_linesz = sizeof (uint32_t) << (extract(ccsidr,
 	    CCSIDR_LINESIZE_MASK, CCSIDR_LINESIZE_SHIFT) + 2);
 
-/*
- * XXX?
-#warning "set acc_size?"
- */
+	/*
+	 * XXX?
+	 #warning "set acc_size?"
+	*/
 }
 
 static void
@@ -110,6 +110,9 @@ cpuid_fill_caches(arm_cpuid_t *cpd)
 	uint32_t ctr;
 	uint32_t clidr;
 	int level;
+
+	ctr = arm_cpuid_ctr();
+	cpd->ac_ctr_reg = ctr;
 
 	clidr = arm_cpuid_clidr();
 	cpd->ac_clidr = clidr;
@@ -158,7 +161,7 @@ cpuid_fill_caches(arm_cpuid_t *cpd)
 	if (!cpd->ac_caches[B_TRUE][0].acc_exists &&
 	    (!cpd->ac_caches[B_FALSE][0].acc_exists ||
 	    !cpd->ac_caches[B_FALSE][0].acc_unified))
-		bop_panic("no L1 instructian cache detected");
+		bop_panic("no L1 instruction cache detected");
 
 	if (!cpd->ac_caches[B_FALSE][1].acc_exists)
 		bop_panic("no L2 data cache detected");
@@ -166,7 +169,7 @@ cpuid_fill_caches(arm_cpuid_t *cpd)
 	/*
 	 * set globals with cache size info
 	 */
-	l2cache_sz = cpd->ac_caches[B_FALSE][1].acc_size;
+	l2cache_sz = cpd->ac_caches[B_FALSE][1].acc_size; /* XXX i don't think we can find this out */
 	l2cache_linesz = cpd->ac_caches[B_FALSE][1].acc_linesz;
 	l2cache_assoc = cpd->ac_caches[B_FALSE][1].acc_assoc;
 }
@@ -181,6 +184,7 @@ cpuid_verify(void)
 {
 	arm_cpuid_mem_vmsa_t vmsa;
 	arm_cpuid_mem_barrier_t barrier;
+	arm_cpuid_barrier_instr_t instr;
 	int sync, syncf;
 
 	arm_cpuid_t *cpd = &cpuid_data0;
@@ -188,7 +192,8 @@ cpuid_verify(void)
 	/* v7 vmsa */
 	vmsa = extract(cpd->ac_mmfr[0], ARM_CPUID_MMFR0_STATE0_MASK,
 	    ARM_CPUID_MMFR0_STATE0_SHIFT);
-	if (vmsa != ARM_CPUID_MEM_VMSA_V7) {
+	/* 3-5 are all vmsav7, but 4 and 5 indicate more features */
+	if (vmsa < ARM_CPUID_MEM_VMSA_V7 || vmsa > ARM_CPUID_MEM_VMSA_V7_EAE) {
 		bop_printf(NULL, "invalid vmsa setting, found 0x%x\n", vmsa);
 		bop_panic("unsupported cpu");
 	}
@@ -196,18 +201,24 @@ cpuid_verify(void)
 	/* check for ISB, DSB, etc. in cp15 */
 	barrier = extract(cpd->ac_mmfr[2], ARM_CPUID_MMFR2_STATE5_MASK,
 	    ARM_CPUID_MMFR2_STATE5_SHIFT);
-	if (barrier != ARM_CPUID_MEM_BARRIER_INSTR) {
+	instr = extract(cpd->ac_isar[4], ARM_CPUID_ISAR4_STATE4_SHIFT,
+	    ARM_CPUID_ISAR4_STATE4_SHIFT);
+	/*
+	 * XXX do we want to support cp15 sync prims anymore?
+	 * we should use explicit isb, dsb, dmb instructions
+	 */
+	if (barrier != ARM_CPUID_CP15_ISB && instr != ARM_CPUID_BARRIER_INSTR) {
 		bop_printf(NULL, "missing support for memory barrier "
 		    "instructions\n");
 		bop_panic("unsupported CPU");
 	}
 
 	/* synch prims */
-	sync = extract(cpd->ac_isar[3], ARM_CPUID_ISAR3_STATE3_SHIFT,
+	sync = extract(cpd->ac_isar[3], ARM_CPUID_ISAR3_STATE3_MASK,
 	    ARM_CPUID_ISAR3_STATE3_SHIFT);
-	syncf = extract(cpd->ac_isar[4], ARM_CPUID_ISAR4_STATE5_SHIFT,
+	syncf = extract(cpd->ac_isar[4], ARM_CPUID_ISAR4_STATE5_MASK,
 	    ARM_CPUID_ISAR4_STATE5_SHIFT);
-	if (sync != 0x2 && syncf != 0x0) {
+	if (sync != 0x2 || syncf != 0x0) {
 		bop_printf(NULL, "unsupported synch primitives: sync,frac: "
 		    "%x,%x\n", sync, syncf);
 		bop_panic("unsupported CPU");
@@ -238,7 +249,7 @@ cpuid_valid_fpident(uint32_t ident)
 
 	vfp = extract(ident, ARM_CPUID_VFP_ARCH_MASK, ARM_CPUID_VFP_ARCH_SHIFT);
 	// XXX: _V3_V2BASE? _V3_NOBASE? _V3_V3BASE?
-	if (vfp != ARM_CPUID_VFP_ARCH_V2) {
+	if (vfp != ARM_CPUID_VFP_ARCH_V3_V2BASE) {
 		bop_printf(NULL, "unsupported vfp version: %x\n", vfp);
 		bop_panic("unsupported CPU");
 	}

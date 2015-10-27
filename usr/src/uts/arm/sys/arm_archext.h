@@ -163,7 +163,9 @@ typedef enum {
 	ARM_CPUID_MEM_VMSA_NONE = 0x0,
 	ARM_CPUID_MEM_VMSA_IMPL = 0x1,
 	ARM_CPUID_MEM_VMSA_V6 = 0x2,
-	ARM_CPUID_MEM_VMSA_V7 = 0x3
+	ARM_CPUID_MEM_VMSA_V7 = 0x3,
+	ARM_CPUID_MEM_VMSA_V7_PXN = 0x4,
+	ARM_CPUID_MEM_VMSA_V7_EAE = 0x5
 } arm_cpuid_mem_vmsa_t;
 
 /* PMSA Support */
@@ -250,9 +252,9 @@ typedef enum {
 #define	ARM_CPUID_MMFR2_STATE5_MASK	0x00f00000
 #define	ARM_CPUID_MMFR2_STATE5_SHIFT	20
 typedef enum {
-	ARM_CPUID_MEM_BARRIER_NONE = 0x0,
-	ARM_CPUID_MEM_BARRIER_CP15 = 0x1,
-	ARM_CPUID_MEM_BARRIER_INSTR = 0x2,
+	ARM_CPUID_CP15_NOMBAR = 0x0,
+	ARM_CPUID_CP15_DSB = 0x1,
+	ARM_CPUID_CP15_ISB = 0x2,
 } arm_cpuid_mem_barrier_t;
 
 /* WFI stall */
@@ -434,6 +436,10 @@ typedef enum {
 /* Barrier instructions */
 #define	ARM_CPUID_ISAR4_STATE4_MASK	0x000f0000
 #define	ARM_CPUID_ISAR4_STATE4_SHIFT	16
+typedef enum {
+	ARM_CPUID_BARRIER_CP15_ONLY = 0x0,
+	ARM_CPUID_BARRIER_INSTR = 0x1
+} arm_cpuid_barrier_instr_t;
 
 /* Fractional synch primitives */
 #define	ARM_CPUID_ISAR4_STATE5_MASK	0x00f00000
