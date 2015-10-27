@@ -19,6 +19,7 @@
  */
 
 #include <sys/asm_linkage.h>
+#include <sys/cpu_asm.h>
 
 #if defined(__lint)
 #include <sys/thread.h>
@@ -37,7 +38,7 @@ threadp(void)
 #else	/* __lint */
 
 	ENTRY(threadp)
-	mrc	p15, 0, r0, c13, c0, 4
+	mrc	CP15_TPIDRPRW(r0)
 	bx	lr
 	SET_SIZE(threadp)
 

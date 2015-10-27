@@ -152,17 +152,11 @@ startup_end()
 void
 startup(void)
 {
-	bop_printf(NULL, "startup_init");
 	startup_init();
 	/* TODO if we ever need a board specific startup, it goes here */
-	bop_printf(NULL, "startup_memlist");
 	startup_memlist();
-	bop_printf(NULL, "startup_kmem");
 	startup_kmem();
-	bop_printf(NULL, "startup_vm");
 	startup_vm();
-	bop_printf(NULL, "startup_modules");
 	startup_modules();
-	bop_printf(NULL, "startup_end");
 	startup_end();
 }

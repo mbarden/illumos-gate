@@ -199,15 +199,19 @@ cpuid_verify(void)
 	}
 
 	/* check for ISB, DSB, etc. in cp15 */
-	barrier = extract(cpd->ac_mmfr[2], ARM_CPUID_MMFR2_STATE5_MASK,
-	    ARM_CPUID_MMFR2_STATE5_SHIFT);
-	instr = extract(cpd->ac_isar[4], ARM_CPUID_ISAR4_STATE4_SHIFT,
-	    ARM_CPUID_ISAR4_STATE4_SHIFT);
 	/*
 	 * XXX do we want to support cp15 sync prims anymore?
 	 * we should use explicit isb, dsb, dmb instructions
 	 */
+	/*
+	barrier = extract(cpd->ac_mmfr[2], ARM_CPUID_MMFR2_STATE5_MASK,
+	    ARM_CPUID_MMFR2_STATE5_SHIFT);
 	if (barrier != ARM_CPUID_CP15_ISB && instr != ARM_CPUID_BARRIER_INSTR) {
+	*/
+
+	instr = extract(cpd->ac_isar[4], ARM_CPUID_ISAR4_STATE4_MASK,
+	    ARM_CPUID_ISAR4_STATE4_SHIFT);
+	if (instr != ARM_CPUID_BARRIER_INSTR) {
 		bop_printf(NULL, "missing support for memory barrier "
 		    "instructions\n");
 		bop_panic("unsupported CPU");

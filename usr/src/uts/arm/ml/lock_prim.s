@@ -29,6 +29,7 @@
 
 #include <sys/asm_linkage.h>
 #include <sys/mutex_impl.h>
+#include <sys/cpu_asm.h>
 
 /*
  * mutex_enter() and mutex_exit().
@@ -40,7 +41,7 @@
  * mutex_tryenter() is similar to mutex_enter() but returns zero if
  * the lock cannot be acquired, nonzero on success.
  * 
- * In the cause of mutex_enter() and mutex_tryenter() we may encounter a
+ * In the case of mutex_enter() and mutex_tryenter() we may encounter a
  * strex failure. We might be tempted to say that we should try again,
  * but we should not.
  *
@@ -107,7 +108,7 @@ mutex_owner_running(mutex_impl_t *lp)
 #else
 
 	ENTRY(mutex_enter)
-	mrc	p15, 0, r1, c13, c0, 4		@ r1 = thread ptr
+	mrc	CP15_TPIDRPRW(r1)		@ r1 = thread ptr
 	ldrex	r2, [r0]
 	cmp	r2, #0				@ check if unheld adaptive
 	bne	mutex_vector_enter		@ Already held, bail
@@ -119,7 +120,7 @@ mutex_owner_running(mutex_impl_t *lp)
 	SET_SIZE(mutex_enter)
 
 	ENTRY(mutex_tryenter)
-	mrc	p15, 0, r1, c13, c0, 4		@ r1 = thread ptr
+	mrc	CP15_TPIDRPRW(r1)		@ r1 = thread ptr
 	ldrex	r2, [r0]
 	cmp	r2, #0				@ check if unheld adaptive
 	bne	mutex_vector_tryenter		@ Already held, bail
@@ -132,7 +133,7 @@ mutex_owner_running(mutex_impl_t *lp)
 	SET_SIZE(mutex_tryenter)	
 
 	ENTRY(mutex_adaptive_tryenter)
-	mrc	p15, 0, r1, c13, c0, 4		@ r1 = thread ptr
+	mrc	CP15_TPIDRPRW(r1)		@ r1 = thread ptr
 	ldrex	r2, [r0]
 	cmp	r2, #0				@ check if unheld adaptive
 	bne	1f				@ Already held, bail
@@ -149,7 +150,7 @@ mutex_owner_running(mutex_impl_t *lp)
 
 	ENTRY(mutex_exit)
 mutex_exit_critical_start:			@ Interrupts restart here
-	mrc	p15, 0, r1, c13, c0, 4		@ r1 = thread ptr
+	mrc	CP15_TPIDRPRW(r1)		@ r1 = thread ptr
 	ldr	r2, [r0]			@ Get the owner field
 	dmb
 	cmp	r1, r2
