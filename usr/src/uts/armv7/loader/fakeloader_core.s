@@ -138,6 +138,10 @@ fakeload_mmu_enable(void)
 	mrc	CP15_sctlr(r0)
 	orr	r0, #0x1		/* enable MMU */
 	mcr	CP15_sctlr(r0)
+	dsb
+	isb
+	mcr	CP15_TLBIALL(r0)		@ invalidate tlb
+	mcr	CP15_BPIALL(r0)			@ invalidate btc
 	bx	lr
 	SET_SIZE(fakeload_mmu_enable)
 #endif	/* __lint */
