@@ -44,6 +44,15 @@ extern "C" {
 #define	ARM_SCTLR_C		0x0004
 #define	ARM_SCTLR_I		0x1000
 
+#ifdef	_ASM
+#define	CP15_sctlr(reg)		p15, 0, reg, c1, c0, 0
+#define	CP15_write_cssr(reg)	p15, 2, reg, c0, c0, 0
+#define	CP15_read_csidr(reg)	p15, 1, reg, c0, c0, 0
+#define	CP15_read_clidr(reg)	p15, 1, reg, c0, c0, 1
+#define	CP15_inval_icache(reg)	p15, 0, reg, c7, c5, 0
+#define	CP15_DCCISW(reg)	p15, 0, reg, c7, c10, 2
+#endif
+
 #ifdef __cplusplus
 }
 #endif

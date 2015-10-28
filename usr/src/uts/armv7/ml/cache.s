@@ -168,36 +168,36 @@ armv7_text_flush(void)
 #else	/* __lint */
 
 	ENTRY(armv7_icache_enable)
-	mrc	p15, 0, r0, c1, c0, 0
+	mrc	CP15_sctlr(r0)
 	orr	r0, #(ARM_SCTLR_I)
-	mcr	p15, 0, r0, c1, c0, 0
+	mcr	CP15_sctlr(r0)
 	bx	lr
 	SET_SIZE(armv7_icache_enable)
 
 	ENTRY(armv7_dcache_enable)
-	mrc	p15, 0, r0, c1, c0, 0
+	mrc	CP15_sctlr(r0)
 	orr	r0, #(ARM_SCTLR_C)
-	mcr	p15, 0, r0, c1, c0, 0
+	mcr	CP15_sctlr(r0)
 	bx	lr
 	SET_SIZE(armv7_dcache_enable)
 
 	ENTRY(armv7_icache_disable)
-	mrc	p15, 0, r0, c1, c0, 0
+	mrc	CP15_sctlr(r0)
 	bic	r0, #(ARM_SCTLR_I)
-	mcr	p15, 0, r0, c1, c0, 0
+	mcr	CP15_sctlr(r0)
 	bx	lr
 	SET_SIZE(armv7_icache_disable)
 
 	ENTRY(armv7_dcache_disable)
-	mrc	p15, 0, r0, c1, c0, 0
+	mrc	CP15_sctlr(r0)
 	bic	r0, #(ARM_SCTLR_C)
-	mcr	p15, 0, r0, c1, c0, 0
+	mcr	CP15_sctlr(r0)
 	bx	lr
 	SET_SIZE(armv7_dcache_disable)
 
 	ENTRY(armv7_icache_inval)
 	mov	r0, #0
-	mcr	p15, 0, r0, c7, c5, 0		@ Invalidate i-cache
+	mcr	CP15_inval_icache(r0)		@ Invalidate I-cache
 	bx	lr
 	SET_SIZE(armv7_icache_inval)
 
@@ -227,7 +227,7 @@ armv7_text_flush(void)
 
 	ENTRY(armv7_text_flush)
 	mov	r0, #0
-	mcr	p15, 0, r0, c7, c5, 0		@ Invalidate i-cache
+	mcr	CP15_inval_icache(r0)		@ Invalidate I-cache
 	mcr	p15, 0, r0, c7, c10, 4		@ Flush d-cache
 	dsb
 	isb
