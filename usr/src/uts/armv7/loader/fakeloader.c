@@ -145,9 +145,14 @@ fakeload_selfmap(atag_header_t *chain)
 
 	aim.aim_header.ah_size = ATAG_ILLUMOS_MAPPING_SIZE;
 	aim.aim_header.ah_tag = ATAG_ILLUMOS_MAPPING;
-	aim.aim_paddr = 0x7000;
+	aim.aim_paddr = 0x7000; /* the stack is 0x1000 below the .text */
 	aim.aim_vaddr = aim.aim_paddr;
-	aim.aim_plen = 0x3000;
+	/*
+	 * NOTE: When changing the length below, don't forget to update the
+	 * loader mapfile.
+	 *
+	 */
+	aim.aim_plen = /* .text + .data */ 0x3000 + /* stack */ 0x1000;
 	aim.aim_vlen = aim.aim_plen;
 	aim.aim_mapflags = PF_R | PF_X | PF_LOADER;
 	atag_append(chain, &aim.aim_header);
