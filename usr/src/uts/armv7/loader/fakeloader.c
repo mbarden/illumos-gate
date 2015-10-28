@@ -29,7 +29,9 @@
  * This is the stock ARM fake uniboot loader.
  *
  * Here's what we have to do:
- *   o Read the atag header and find the combined archive header
+ *   o Read the atag header and find the combined archive header.  If we
+ *     aren't given one (ATAG_INITRD2), we check the default address
+ *     (DEFAULT_INITRD_ADDRESS) and create an atag for it.
  *   o Determine the set of mappings we need to add for the following:
  *   		- unix
  *   		- boot_archive
@@ -43,6 +45,8 @@
  *     and only provide us with the ability to map our .text and potentially our
  *     .bss. We should strive to avoid even that if we can.
  */
+
+#define	DEFAULT_INITRD_ADDRESS	0x00800000
 
 #ifdef	DEBUG
 #define	FAKELOAD_DPRINTF(x)	fakeload_puts(x)
@@ -593,6 +597,42 @@ fakeload_create_map(armpte_t *pt, atag_illumos_mapping_t *aimp)
 #endif /* MAP_DEBUG */
 }
 
+static const atag_initrd_t *
+fakeload_find_initrd(atag_header_t *chain)
+{
+	static atag_initrd_t fake;
+	const atag_initrd_t *initrd;
+	const fakeloader_hdr_t *hdr;
+
+	initrd = (atag_initrd_t *)atag_find(chain, ATAG_INITRD2);
+	if (initrd != NULL)
+		return initrd;
+
+	FAKELOAD_DPRINTF("missing ATAG_INITRD2...\n");
+	FAKELOAD_DPRINTF("trying default address...\n");
+
+	hdr = (const fakeloader_hdr_t *)DEFAULT_INITRD_ADDRESS;
+
+	if (hdr->fh_magic[0] != FH_MAGIC0 ||
+	    hdr->fh_magic[1] != FH_MAGIC1 ||
+	    hdr->fh_magic[2] != FH_MAGIC2 ||
+	    hdr->fh_magic[3] != FH_MAGIC3) {
+		FAKELOAD_DPRINTF("magic mismatch\n");
+		return NULL;
+	}
+
+	/* create a fake ATAG_INITRD2 */
+	fake.ai_header.ah_size = ATAG_INITRD2_SIZE;
+	fake.ai_header.ah_tag = ATAG_INITRD2;
+	fake.ai_start = DEFAULT_INITRD_ADDRESS;
+	fake.ai_size = MAX(hdr->fh_unix_offset + hdr->fh_unix_size,
+			   hdr->fh_archive_offset + hdr->fh_archive_size);
+
+	atag_append(chain, &fake.ai_header);
+
+	return (atag_initrd_t *)atag_find(chain, ATAG_INITRD2);
+}
+
 void
 fakeload_init(void *ident, void *ident2, void *atag)
 {
@@ -605,7 +645,7 @@ fakeload_init(void *ident, void *ident2, void *atag)
 
 	fakeload_backend_init();
 	fakeload_puts("Hello from the loader\n");
-	initrd = (atag_initrd_t *)atag_find(chain, ATAG_INITRD2);
+	initrd = fakeload_find_initrd(chain);
 	if (initrd == NULL)
 		fakeload_panic("missing the initial ramdisk\n");
 
