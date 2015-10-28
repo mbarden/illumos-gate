@@ -111,6 +111,9 @@ cpuid_fill_caches(arm_cpuid_t *cpd)
 	uint32_t clidr;
 	int level;
 
+	ctr = arm_cpuid_ctr();
+	cpd->ac_ctr_reg = ctr;
+
 	clidr = arm_cpuid_clidr();
 	cpd->ac_clidr = clidr;
 
@@ -181,6 +184,7 @@ cpuid_verify(void)
 {
 	arm_cpuid_mem_vmsa_t vmsa;
 	arm_cpuid_mem_barrier_t barrier;
+	arm_cpuid_barrier_instr_t instr;
 	int sync, syncf;
 
 	arm_cpuid_t *cpd = &cpuid_data0;
@@ -188,26 +192,27 @@ cpuid_verify(void)
 	/* v7 vmsa */
 	vmsa = extract(cpd->ac_mmfr[0], ARM_CPUID_MMFR0_STATE0_MASK,
 	    ARM_CPUID_MMFR0_STATE0_SHIFT);
-	if (vmsa != ARM_CPUID_MEM_VMSA_V7) {
+	/* 3-5 are all vmsav7, but 4 and 5 indicate more features */
+	if (vmsa < ARM_CPUID_MEM_VMSA_V7 || vmsa > ARM_CPUID_MEM_VMSA_V7_EAE) {
 		bop_printf(NULL, "invalid vmsa setting, found 0x%x\n", vmsa);
 		bop_panic("unsupported cpu");
 	}
 
-	/* check for ISB, DSB, etc. in cp15 */
-	barrier = extract(cpd->ac_mmfr[2], ARM_CPUID_MMFR2_STATE5_MASK,
-	    ARM_CPUID_MMFR2_STATE5_SHIFT);
-	if (barrier != ARM_CPUID_MEM_BARRIER_INSTR) {
+	/* check for ISB, DSB, etc. */
+	instr = extract(cpd->ac_isar[4], ARM_CPUID_ISAR4_STATE4_MASK,
+	    ARM_CPUID_ISAR4_STATE4_SHIFT);
+	if (instr != ARM_CPUID_BARRIER_INSTR) {
 		bop_printf(NULL, "missing support for memory barrier "
 		    "instructions\n");
 		bop_panic("unsupported CPU");
 	}
 
 	/* synch prims */
-	sync = extract(cpd->ac_isar[3], ARM_CPUID_ISAR3_STATE3_SHIFT,
+	sync = extract(cpd->ac_isar[3], ARM_CPUID_ISAR3_STATE3_MASK,
 	    ARM_CPUID_ISAR3_STATE3_SHIFT);
-	syncf = extract(cpd->ac_isar[4], ARM_CPUID_ISAR4_STATE5_SHIFT,
+	syncf = extract(cpd->ac_isar[4], ARM_CPUID_ISAR4_STATE5_MASK,
 	    ARM_CPUID_ISAR4_STATE5_SHIFT);
-	if (sync != 0x2 && syncf != 0x0) {
+	if (sync != 0x2 || syncf != 0x0) {
 		bop_printf(NULL, "unsupported synch primitives: sync,frac: "
 		    "%x,%x\n", sync, syncf);
 		bop_panic("unsupported CPU");
@@ -238,7 +243,7 @@ cpuid_valid_fpident(uint32_t ident)
 
 	vfp = extract(ident, ARM_CPUID_VFP_ARCH_MASK, ARM_CPUID_VFP_ARCH_SHIFT);
 	// XXX: _V3_V2BASE? _V3_NOBASE? _V3_V3BASE?
-	if (vfp != ARM_CPUID_VFP_ARCH_V2) {
+	if (vfp != ARM_CPUID_VFP_ARCH_V3_V2BASE) {
 		bop_printf(NULL, "unsupported vfp version: %x\n", vfp);
 		bop_panic("unsupported CPU");
 	}

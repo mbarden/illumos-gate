@@ -185,6 +185,11 @@ arm_cpuid_mvfr1()
 	bx	lr
 	SET_SIZE(arm_cpuid_clidr)
 
+	ENTRY(arm_cpuid_ctr)
+	mrc	CP15_ctr(r0)
+	bx	lr
+	SET_SIZE(arm_cpuid_ctr)
+
 	ENTRY(arm_cpuid_ccsidr)
 	lsl	r0, r0, #1
 	cmp	r1, #0				/* icache == B_FALSE */
