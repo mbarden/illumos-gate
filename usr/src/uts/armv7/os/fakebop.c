@@ -148,7 +148,7 @@ bop_panic(const char *msg)
 
 	hexdump_stack();
 
-	bop_printf(NULL, "Spinning Forever...", msg);
+	bop_printf(NULL, "Spinning Forever...\n", msg);
 	for (;;)
 		;
 }

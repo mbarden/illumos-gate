@@ -161,7 +161,7 @@ cpuid_fill_caches(arm_cpuid_t *cpd)
 	if (!cpd->ac_caches[B_TRUE][0].acc_exists &&
 	    (!cpd->ac_caches[B_FALSE][0].acc_exists ||
 	    !cpd->ac_caches[B_FALSE][0].acc_unified))
-		bop_panic("no L1 instructian cache detected");
+		bop_panic("no L1 instruction cache detected");
 
 	if (!cpd->ac_caches[B_FALSE][1].acc_exists)
 		bop_panic("no L2 data cache detected");

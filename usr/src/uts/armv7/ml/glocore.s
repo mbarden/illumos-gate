@@ -162,7 +162,7 @@ _locore_start(struct boot_syscalls *sysp, struct bootops *bop)
 	mcr	CP15_TPIDRPRW(r0)
 
 	/*
-	 * Go ahead now and enable the L1 I/D caches.  
+	 * Go ahead now and enable the L1 I/D caches.
 	 */
 	mrc	CP15_sctlr(r0)
 	orr	r0, #0x04	/* D-cache */

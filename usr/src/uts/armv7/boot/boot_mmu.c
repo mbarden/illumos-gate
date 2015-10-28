@@ -22,7 +22,7 @@
 #include <vm/pte.h>
 
 /*
- * Routines for mainpulating page tables during fakebop.
+ * Routines for manipulating page tables during fakebop.
  */
 
 /* Root of the boot page table and the L2 page table arenas */

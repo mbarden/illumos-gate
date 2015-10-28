@@ -197,7 +197,7 @@ armv7_text_flush(void)
 
 	ENTRY(armv7_icache_inval)
 	mov	r0, #0
-	mcr	CP15_inval_icache(r0)		@ Invalidate I-cache
+	mcr	CP15_inval_icache(r0)		@ Invalidate i-cache
 	bx	lr
 	SET_SIZE(armv7_icache_inval)
 
