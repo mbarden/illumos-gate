@@ -165,8 +165,8 @@ _locore_start(struct boot_syscalls *sysp, struct bootops *bop)
 	 * Go ahead now and enable the L1 I/D caches.
 	 */
 	mrc	CP15_sctlr(r0)
-	orr	r0, #0x04	/* D-cache */
-	orr	r0, #0x1000	/* I-cache */
+	orr	r0, #(ARM_SCTLR_C)	/* D-cache */
+	orr	r0, #(ARM_SCTLR_I)	/* I-cache */
 	mcr	CP15_sctlr(r0)
 
 	/*

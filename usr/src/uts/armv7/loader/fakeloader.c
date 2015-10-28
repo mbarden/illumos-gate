@@ -746,10 +746,9 @@ fakeload_init(void *ident, void *ident2, void *atag)
 
 	/* Cache disable */
 	FAKELOAD_DPRINTF("Flushing and disabling caches\n");
-	armv7_dcache_flush();
 	armv7_dcache_disable();
-	armv7_dcache_inval();
 	armv7_icache_disable();
+	armv7_dcache_clean_inval();
 	armv7_icache_inval();
 
 	/* Program the page tables */
