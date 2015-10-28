@@ -20,9 +20,9 @@
 
 	ENTRY(_mach_start)
 	/* Enable access to p10 and p11 (privileged mode only) */
-	mrc	p15, 0, r0, c1, c0, 2
+	mrc	CP15_cpacr(r0)
 	orr	r0, #0x00500000
-	mcr	p15, 0, r0, c1, c0, 2
+	mcr	CP15_cpacr(r0)
 
-	bx	r14
+	bx	lr
 	SET_SIZE(_mach_start)
