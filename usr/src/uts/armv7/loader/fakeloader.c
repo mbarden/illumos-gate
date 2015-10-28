@@ -650,6 +650,11 @@ fakeload_init(void *ident, void *ident2, void *atag)
 
 	fakeload_backend_init();
 	fakeload_puts("Hello from the loader\n");
+
+	fakeload_puts("Trying to leave hyp_mode...\n");
+	fakeload_leave_hyp_mode();
+	fakeload_puts("left hyp_mode\n");
+
 	initrd = fakeload_find_initrd(chain);
 	if (initrd == NULL)
 		fakeload_panic("missing the initial ramdisk\n");
