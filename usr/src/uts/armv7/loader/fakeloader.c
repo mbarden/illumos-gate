@@ -555,6 +555,9 @@ fakeload_create_map(armpte_t *pt, atag_illumos_mapping_t *aimp)
 	fakeload_puts("-");
 	fakeload_ultostr(aimp->aim_vlen);
 	fakeload_puts("\n");
+	fakeload_puts("mapflags\n");
+	fakeload_ultostr(aimp->aim_mapflags);
+	fakeload_puts("\n");
 #endif /* MAP_DEBUG */
 
 	/*
