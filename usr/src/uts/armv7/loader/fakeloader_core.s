@@ -148,7 +148,8 @@ fakeload_mmu_enable(void)
 
 
 	ENTRY(fakeload_exec)
+	mov	r12, lr
 	blx	r3
 	/* We should never execute this. If we do we'll go back to a panic */
-	bx	lr
+	bx	r12
 	SET_SIZE(fakeload_exec)
