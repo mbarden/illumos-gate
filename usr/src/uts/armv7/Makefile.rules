@@ -11,6 +11,7 @@
 
 #
 # Copyright 2013 (c) Joyent, Inc.  All rights reserved.
+# Copyright 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
 #
 
 #
@@ -21,11 +22,11 @@ $(OBJS_DIR)/%.o:		$(UTSBASE)/armv7/boot/%.c
 	$(COMPILE.c) -o $@ $<
 	$(CTFCONVERT_O)
 
-$(OBJS_DIR)/%.o:		$(UTSBASE)/armv7/math/%.c
+$(OBJS_DIR)/%.o:		$(UTSBASE)/../common/math/aarch32/%.c
 	$(COMPILE.c) -o $@ $<
 	$(CTFCONVERT_O)
 
-$(OBJS_DIR)/%.o:		$(UTSBASE)/armv7/math/%.s
+$(OBJS_DIR)/%.o:		$(UTSBASE)/../common/math/aarch32/%.s
 	$(COMPILE.s) -o $@ $<
 	$(CTFCONVERT_O)
 
