@@ -11,12 +11,16 @@
 
 /*
  * Copyright (c) 2014 Joyent, Inc.  All rights reserved.
+ * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  */
 
 #include <sys/types.h>
 #include <sys/bootconf.h>
 #include <sys/obpdefs.h>
 #include <sys/promif.h>
+#include <sys/systm.h>
+#include <sys/memnode.h>
+#include <vm/page.h>
 
 /*
  *	32-bit Kernel's Virtual memory layout.
@@ -56,12 +60,21 @@
  * + Item does not exist at this time.
  */
 
+extern void pcf_init(void);
+
+
 struct bootops		*bootops = 0;	/* passed in from boot */
 struct bootops		**bootopsp;
 struct boot_syscalls	*sysp;		/* passed in from boot */
 
 char kern_bootargs[OBP_MAXPATHLEN];
 char kern_bootfile[OBP_MAXPATHLEN];
+
+/* XXX: 1GB for now */
+pgcnt_t physmem = mmu_btop(1ul << 30);
+
+pgcnt_t npages;
+pgcnt_t orig_npages;
 
 caddr_t s_text;		/* start of kernel text segment */
 caddr_t e_text;		/* end of kernel text segment */
@@ -100,6 +113,17 @@ int l2cache_sz;
 int l2cache_linesz;
 int l2cache_assoc;
 
+static void
+print_memlist(char *title, struct memlist *mp)
+{
+	prom_printf("MEMLIST: %s:\n", title);
+	while (mp != NULL)  {
+		prom_printf("\tAddress 0x%" PRIx64 ", size 0x%" PRIx64 "\n",
+		    mp->ml_address, mp->ml_size);
+		mp = mp->ml_next;
+	}
+}
+
 /*
  * Do basic set up.
  */
@@ -115,6 +139,65 @@ startup_init()
 static void
 startup_memlist()
 {
+	struct memlist *ml;
+	int memblocks;
+
+	ml = &bootops->boot_mem.physinstalled;
+	if (prom_debug)
+		print_memlist("boot physinstalled", ml);
+
+	/* XXX: assuming we have only one element in our memlist */
+	physmax = (ml->ml_address + ml->ml_size - 1) >> PAGESHIFT;
+	physinstalled = btop(ml->ml_size);
+	memblocks = 1;
+
+	if (prom_debug)
+		prom_printf("physmax = %lu, physinstalled = %lu, "
+		    "memblocks = %d\n", physmax, physinstalled, memblocks);
+
+	// XXX: mmu_init();
+	startup_build_mem_nodes(ml);
+
+	/*
+	 * We will need page_t's for every page in the system.
+	 *
+	 * XXX: Don't count pages we'll never get to use - e.g., pages
+	 * mapped at or above the start of kernel .text.
+	 */
+	npages = physinstalled - 1;
+
+	/*
+	 * If physmem is patched to be non-zero, use it instead of the
+	 * computed value unless it is larger than the actual amount of
+	 * memory on hand.
+	 */
+	if (physmem == 0 || physmem > npages) {
+		physmem = npages;
+	} else if (physmem < npages) {
+		orig_npages = npages;
+		npages = physmem;
+	}
+
+	if (prom_debug)
+		prom_printf("npages = %lu, orig_npages = %lu\n", npages,
+		    orig_npages);
+
+	// XXX: allocate pse_mutex
+	// XXX: set valloc_base
+	// XXX: set up page coloring
+	//	page_coloring_setup(pagecolor_mem);
+
+	page_lock_init();
+
+	// XXX: page_ctrs_alloc(page_ctrs_mem);
+
+	pcf_init();
+
+	/*
+	 * Initialize the page structures from the memory lists.
+	 */
+	availrmem_initial = availrmem = freemem = 0;
+
 	bop_panic("startup_memlist");
 }
 

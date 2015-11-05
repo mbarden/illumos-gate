@@ -11,6 +11,7 @@
 
 /*
  * Copyright (c) 2013 Joyent, Inc.  All rights reserved.
+ * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  */
 
 #ifndef _SYS_MEMNODE_H
@@ -59,7 +60,6 @@ extern int max_mem_nodes;
 extern int plat_pfn_to_mem_node(pfn_t);
 extern void plat_assign_lgrphand_to_mem_node(lgrp_handle_t, int);
 extern lgrp_handle_t plat_mem_node_to_lgrphand(int);
-extern void plat_slice_add(pfn_t, pfn_t);
 extern void plat_slice_del(pfn_t, pfn_t);
 
 struct mem_node_conf {
@@ -67,6 +67,10 @@ struct mem_node_conf {
 	pfn_t	physbase;	/* lowest PFN in this memnode */
 	pfn_t	physmax;	/* highest PFN in this memnode */
 };
+
+struct memlist;
+
+extern void startup_build_mem_nodes(struct memlist *);
 
 extern struct mem_node_conf	mem_node_config[];
 
