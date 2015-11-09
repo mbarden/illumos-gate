@@ -51,8 +51,9 @@ $(TYPES:%=lint.%):
 	@CURTYPE=$(@:lint.%=%) $(MAKE) lintcheck
 
 $(STANDLIBRARY): $(OBJS) $(LINKTEST_OBJ)
-	$(LD) $(BREDUCE) $(ZDEFS) $(LDFLAGS) -o $@.linktest $(OBJS) $(LINKTEST_OBJ)
-	rm $@.linktest
+	# XXXARM: disable linktest until we can build userspace libs
+	#$(LD) $(BREDUCE) $(ZDEFS) $(LDFLAGS) -o $@.linktest $(OBJS) $(LINKTEST_OBJ)
+	#rm $@.linktest
 	$(LD) $(LDFLAGS) -o $@ $(OBJS)
 
 clobber: $(TYPES:%=clobber.%)

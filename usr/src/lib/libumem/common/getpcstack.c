@@ -43,6 +43,12 @@ extern void flush_windows(void);
  */
 #define	UMEM_FRAMESIZE	(sizeof (struct frame))
 
+#elif defined(__arm__)
+/*
+ * XXXARM: Is this right?
+ */
+#define	UMEM_FRAMESIZE	(sizeof (struct frame))
+
 #else
 #error needs update for new architecture
 #endif
