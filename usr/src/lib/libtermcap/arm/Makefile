@@ -10,14 +10,12 @@
 #
 
 #
-# Copyright 2011 Nexenta Systems, Inc.  All rights reserved.
+# Copyright 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
 #
 
-# install this library in the root filesystem
-include ../../Makefile.rootfs
+include $(SRC)/lib/Makefile.filter.com
+include ../Makefile.com
 
-LIBRARY =	libtermcap.a
-VERS =		.1
-#LIBS +=		$(LINTLIB) # XXX: figure out how to disable it only on ARM
+install: $(ROOTLIBS) $(ROOTLINKS)
 
-DYNFLAGS +=	$(ZLOADFLTR)
+include $(SRC)/lib/Makefile.filter.targ
