@@ -776,7 +776,7 @@ arm_dis_dpi(uint32_t in, arm_cond_code_t cond, char *buf, size_t buflen)
 	switch (dpi_inst.dpii_op) {
 	case DPI_OP_MOV:
 	case DPI_OP_MVN:
-		len = snprintf(buf, buflen, "%s%s%s %s",
+		len = dis_snprintf(buf, buflen, "%s%s%s %s",
 		    arm_dpi_opnames[dpi_inst.dpii_op],
 		    arm_cond_names[dpi_inst.dpii_cond],
 		    dpi_inst.dpii_sbit != 0 ? "s" : "",
@@ -786,13 +786,13 @@ arm_dis_dpi(uint32_t in, arm_cond_code_t cond, char *buf, size_t buflen)
 	case DPI_OP_CMN:
 	case DPI_OP_TST:
 	case DPI_OP_TEQ:
-		len = snprintf(buf, buflen, "%s%s %s",
+		len = dis_snprintf(buf, buflen, "%s%s %s",
 		    arm_dpi_opnames[dpi_inst.dpii_op],
 		    arm_cond_names[dpi_inst.dpii_cond],
 		    arm_reg_names[dpi_inst.dpii_rn]);
 		break;
 	default:
-		len = snprintf(buf, buflen,
+		len = dis_snprintf(buf, buflen,
 		    "%s%s%s %s, %s", arm_dpi_opnames[dpi_inst.dpii_op],
 		    arm_cond_names[dpi_inst.dpii_cond],
 		    dpi_inst.dpii_sbit != 0 ? "s" : "",
@@ -820,28 +820,28 @@ arm_dis_dpi(uint32_t in, arm_cond_code_t cond, char *buf, size_t buflen)
 		rot = rawrot * 2;
 		imm = (rawimm << (32 - rot)) | (rawimm >> rot);
 
-		len = snprintf(buf, buflen, ", #%u, %d ; 0x%08x", rawimm,
+		len = dis_snprintf(buf, buflen, ", #%u, %d ; 0x%08x", rawimm,
 		    rawrot, imm);
 		break;
 	}
 	case ARM_DPI_SHIFTER_SIMM:
 		if (dpi_inst.dpii_un.dpii_si.dpiss_code == DPI_S_NONE) {
-			len = snprintf(buf, buflen, ", %s",
+			len = dis_snprintf(buf, buflen, ", %s",
 			    arm_reg_names[dpi_inst.dpii_un.dpii_si.dpiss_targ]);
 			break;
 		}
 		if (dpi_inst.dpii_un.dpii_si.dpiss_code == DPI_S_RRX) {
-			len = snprintf(buf, buflen, ", %s rrx",
+			len = dis_snprintf(buf, buflen, ", %s rrx",
 			    arm_reg_names[dpi_inst.dpii_un.dpii_si.dpiss_targ]);
 			break;
 		}
-		len = snprintf(buf, buflen, ", %s, %s #%d",
+		len = dis_snprintf(buf, buflen, ", %s, %s #%d",
 		    arm_reg_names[dpi_inst.dpii_un.dpii_si.dpiss_targ],
 		    arm_dpi_shifts[dpi_inst.dpii_un.dpii_si.dpiss_code],
 		    dpi_inst.dpii_un.dpii_si.dpiss_imm);
 		break;
 	case ARM_DPI_SHIFTER_SREG:
-		len = snprintf(buf, buflen, ", %s, %s %s",
+		len = dis_snprintf(buf, buflen, ", %s, %s %s",
 		    arm_reg_names[dpi_inst.dpii_un.dpii_ri.dpisr_targ],
 		    arm_dpi_shifts[dpi_inst.dpii_un.dpii_ri.dpisr_code],
 		    arm_reg_names[dpi_inst.dpii_un.dpii_ri.dpisr_val]);
@@ -901,7 +901,7 @@ arm_dis_ldstr(uint32_t in, char *buf, size_t buflen)
 	rd = (in & ARM_LS_RD_MASK) >> ARM_LS_RD_SHIFT;
 	rn = (in & ARM_LS_RN_MASK) >> ARM_LS_RN_SHIFT;
 
-	len = snprintf(buf, buflen, "%s%s%s%s %s, ", lbit != 0 ? "ldr" : "str",
+	len = dis_snprintf(buf, buflen, "%s%s%s%s %s, ", lbit != 0 ? "ldr" : "str",
 	    arm_cond_names[cc], bbit != 0 ? "b" : "",
 	    (pbit == 0 && wbit != 0) ? "t" : "",
 	    arm_reg_names[rd]);
@@ -917,7 +917,7 @@ arm_dis_ldstr(uint32_t in, char *buf, size_t buflen)
 		 * handle the pre-indexed version (A5.2.5) which depends on the
 		 * wbit being set.
 		 */
-		len += snprintf(buf + len, buflen - len, "[%s, #%s%d]%s",
+		len += dis_snprintf(buf + len, buflen - len, "[%s, #%s%d]%s",
 		    arm_reg_names[rn], ubit != 0 ? "" : "-",
 		    in & ARM_LS_IMM_MASK, wbit != 0 ? "!" : "");
 	} else if (ibit != 0 && pbit != 0) {
@@ -929,7 +929,7 @@ arm_dis_ldstr(uint32_t in, char *buf, size_t buflen)
 		 * the shift code matters.
 		 */
 		rm = in & ARM_LS_REG_RM_MASK;
-		len += snprintf(buf + len, buflen - len, "[%s, %s%s",
+		len += dis_snprintf(buf + len, buflen - len, "[%s, %s%s",
 		    arm_reg_names[rn], ubit != 0 ? "" : "-",
 		    arm_reg_names[rm]);
 		if (len >= buflen)
@@ -943,28 +943,28 @@ arm_dis_ldstr(uint32_t in, char *buf, size_t buflen)
 			if (simm == 0 && sc == DPI_S_ROR)
 				sc = DPI_S_RRX;
 
-			len += snprintf(buf + len, buflen - len, "%s",
+			len += dis_snprintf(buf + len, buflen - len, "%s",
 			    arm_dpi_shifts[sc]);
 			if (len >= buflen)
 				return (-1);
 			if (sc != DPI_S_RRX) {
-				len += snprintf(buf + len, buflen - len, " #%d",
+				len += dis_snprintf(buf + len, buflen - len, " #%d",
 				    simm);
 				if (len >= buflen)
 					return (-1);
 			}
 		}
-		len += snprintf(buf + len, buflen - len, "]%s",
+		len += dis_snprintf(buf + len, buflen - len, "]%s",
 		    wbit != 0 ? "!" : "");
 	} else if (ibit == 0 && pbit == 0 && wbit == 0) {
 		/* A5.2.8 immediate post-indexed */
-		len += snprintf(buf + len, buflen - len, "[%s], #%s%d",
+		len += dis_snprintf(buf + len, buflen - len, "[%s], #%s%d",
 		    arm_reg_names[rn], ubit != 0 ? "" : "-",
 		    in & ARM_LS_IMM_MASK);
 	} else if (ibit != 0 && pbit == 0 && wbit == 0) {
 		/* A5.2.9 and A5.2.10 */
 		rm = in & ARM_LS_REG_RM_MASK;
-		len += snprintf(buf + len, buflen - len, "[%s], %s%s",
+		len += dis_snprintf(buf + len, buflen - len, "[%s], %s%s",
 		    arm_reg_names[rn], ubit != 0 ? "" : "-",
 		    arm_reg_names[rm]);
 		if ((in & ARM_LS_REG_NRM_MASK) != 0) {
@@ -976,12 +976,12 @@ arm_dis_ldstr(uint32_t in, char *buf, size_t buflen)
 			if (simm == 0 && sc == DPI_S_ROR)
 				sc = DPI_S_RRX;
 
-			len += snprintf(buf + len, buflen - len, "%s",
+			len += dis_snprintf(buf + len, buflen - len, "%s",
 			    arm_dpi_shifts[sc]);
 			if (len >= buflen)
 				return (-1);
 			if (sc != DPI_S_RRX)
-				len += snprintf(buf + len, buflen - len,
+				len += dis_snprintf(buf + len, buflen - len,
 				    " #%d", simm);
 		}
 	}
@@ -1114,11 +1114,11 @@ arm_dis_ldstr_multi(uint32_t in, char *buf, size_t buflen)
 
 	if ((lbit == 0 && addr_mode == 2 && rn == ARM_REG_R13 && wbit != 0) ||
 	    (lbit != 0 && addr_mode == 1 && rn == ARM_REG_R13 && wbit != 0))
-		len = snprintf(buf, buflen, "%s%s { ",
+		len = dis_snprintf(buf, buflen, "%s%s { ",
 		    lbit != 0 ? "pop" : "push",
 		    arm_cond_names[cc]);
 	else
-		len = snprintf(buf, buflen, "%s%s%s %s%s, { ",
+		len = dis_snprintf(buf, buflen, "%s%s%s %s%s, { ",
 		    lbit != 0 ? "ldm" : "stm",
 		    arm_cond_names[cc],
 		    arm_lsm_mode_names[addr_mode],
@@ -1127,7 +1127,7 @@ arm_dis_ldstr_multi(uint32_t in, char *buf, size_t buflen)
 
 	len += print_reg_list(buf + len, buflen - len, regs);
 
-	len += snprintf(buf + len, buflen - len, " }%s", sbit != 0 ? "^" : "");
+	len += dis_snprintf(buf + len, buflen - len, " }%s", sbit != 0 ? "^" : "");
 	return (len >= buflen ? -1 : 0);
 }
 
@@ -1202,7 +1202,7 @@ arm_dis_els(uint32_t in, char *buf, size_t buflen)
 	rn = (in & ARM_ELS_RN_MASK) >> ARM_ELS_RN_SHIFT;
 	rd = (in & ARM_ELS_RD_MASK) >> ARM_ELS_RD_SHIFT;
 
-	len = snprintf(buf, buflen, "%s%s%s %s, ", iname, arm_cond_names[cc],
+	len = dis_snprintf(buf, buflen, "%s%s%s %s, ", iname, arm_cond_names[cc],
 	    suffix, arm_reg_names[rd]);
 	if (len >= buflen)
 		return (-1);
@@ -1217,13 +1217,13 @@ arm_dis_els(uint32_t in, char *buf, size_t buflen)
 		/* Bits 11-8 form the upper 4 bits of imm */
 		imm = (in & ARM_ELS_UP_AM_MASK) >> (ARM_ELS_UP_AM_SHIFT - 4);
 		imm |= in & ARM_ELS_LOW_AM_MASK;
-		len += snprintf(buf + len, buflen - len, "[%s, #%s%d]%s",
+		len += dis_snprintf(buf + len, buflen - len, "[%s, #%s%d]%s",
 		    arm_reg_names[rn],
 		    ubit != 0 ? "" : "-", imm,
 		    wbit != 0 ? "!" : "");
 	} else if (pbit && ibit == 0) {
 		/* Handle A5.3.3 and A5.3.5 register offset and pre-indexed */
-		len += snprintf(buf + len, buflen - len, "[%s %s%s]%s",
+		len += dis_snprintf(buf + len, buflen - len, "[%s %s%s]%s",
 		    arm_reg_names[rn],
 		    ubit != 0 ? "" : "-",
 		    arm_reg_names[in & ARM_ELS_LOW_AM_MASK],
@@ -1233,11 +1233,11 @@ arm_dis_els(uint32_t in, char *buf, size_t buflen)
 		/* Bits 11-8 form the upper 4 bits of imm */
 		imm = (in & ARM_ELS_UP_AM_MASK) >> (ARM_ELS_UP_AM_SHIFT - 4);
 		imm |= in & ARM_ELS_LOW_AM_MASK;
-		len += snprintf(buf + len, buflen - len, "[%s], #%s%d",
+		len += dis_snprintf(buf + len, buflen - len, "[%s], #%s%d",
 		    arm_reg_names[rn], ubit != 0 ? "" : "-", imm);
 	} else if (pbit == 0 && ibit == 0) {
 		/* Handle A 5.3.7 Register post-indexed */
-		len += snprintf(buf + len, buflen - len, "[%s], %s%s",
+		len += dis_snprintf(buf + len, buflen - len, "[%s], %s%s",
 		    arm_reg_names[rn], ubit != 0 ? "" : "-",
 		    arm_reg_names[in & ARM_ELS_LOW_AM_MASK]);
 	}
@@ -1259,7 +1259,7 @@ arm_dis_swap(uint32_t in, char *buf, size_t buflen)
 	rd = (in & ARM_ELS_RD_MASK) >> ARM_ELS_RD_SHIFT;
 	rm = in & ARM_ELS_RN_MASK;
 
-	if (snprintf(buf, buflen, "swp%s%s %s, %s, [%s]",
+	if (dis_snprintf(buf, buflen, "swp%s%s %s, %s, [%s]",
 	    arm_cond_names[cc],
 	    (in & ARM_ELS_SWAP_BYTE_MASK) ? "b" : "",
 	    arm_reg_names[rd], arm_reg_names[rm], arm_reg_names[rn]) >=
@@ -1310,17 +1310,17 @@ arm_dis_lsexcl(uint32_t in, char *buf, size_t buflen)
 	rz = (in & ARM_ELS_LOW_AM_MASK);
 	lbit = in & ARM_ELS_LBIT_MASK;
 
-	len = snprintf(buf, buflen, "%s%sex %s, ",
+	len = dis_snprintf(buf, buflen, "%s%sex %s, ",
 	    lbit != 0 ? "ldr" : "str",
 	    arm_cond_names[cc], arm_reg_names[ry]);
 	if (len >= buflen)
 		return (-1);
 
 	if (lbit)
-		len += snprintf(buf + len, buflen - len, "[%s]",
+		len += dis_snprintf(buf + len, buflen - len, "[%s]",
 		    arm_reg_names[rx]);
 	else
-		len += snprintf(buf + len, buflen - len, "%s, [%s]",
+		len += dis_snprintf(buf + len, buflen - len, "%s, [%s]",
 		    arm_reg_names[rz], arm_reg_names[rx]);
 	return (len >= buflen ? -1 : 0);
 }
@@ -1373,13 +1373,13 @@ arm_dis_extmul(uint32_t in, char *buf, size_t buflen)
 
 	if ((in & ARM_EMULT_MA_MASK) == 0) {
 		if (in & ARM_EMULT_ABIT_MASK) {
-			len = snprintf(buf, buflen, "mla%s%s %s, %s, %s, %s",
+			len = dis_snprintf(buf, buflen, "mla%s%s %s, %s, %s, %s",
 			    arm_cond_names[cc],
 			    (in & ARM_EMULT_SBIT_MASK) ? "s" : "",
 			    arm_reg_names[rd], arm_reg_names[rm],
 			    arm_reg_names[rs], arm_reg_names[rs]);
 		} else {
-			len = snprintf(buf, buflen, "mul%s%s %s, %s, %s",
+			len = dis_snprintf(buf, buflen, "mul%s%s %s, %s, %s",
 			    arm_cond_names[cc],
 			    (in & ARM_EMULT_SBIT_MASK) ? "s" : "",
 			    arm_reg_names[rd], arm_reg_names[rm],
@@ -1387,11 +1387,11 @@ arm_dis_extmul(uint32_t in, char *buf, size_t buflen)
 
 		}
 	} else if ((in & ARM_EMULT_UMA_MASK) == ARM_EMULT_UMA_TARG) {
-		len = snprintf(buf, buflen, "umaal%s %s, %s, %s, %s",
+		len = dis_snprintf(buf, buflen, "umaal%s %s, %s, %s, %s",
 		    arm_cond_names[cc], arm_reg_names[rn], arm_reg_names[rd],
 		    arm_reg_names[rm], arm_reg_names[rs]);
 	} else if ((in & ARM_EMULT_MAL_MASK) == ARM_EMULT_MAL_TARG) {
-		len = snprintf(buf, buflen, "%s%s%s%s %s, %s, %s, %s",
+		len = dis_snprintf(buf, buflen, "%s%s%s%s %s, %s, %s, %s",
 		    (in & ARM_EMULT_UNBIT_MASK) ? "s" : "u",
 		    (in & ARM_EMULT_ABIT_MASK) ? "mlal" : "mull",
 		    arm_cond_names[cc],
@@ -1422,7 +1422,7 @@ arm_dis_status_regs(uint32_t in, char *buf, size_t buflen)
 
 	if ((in & ARM_CDSP_MRS_MASK) == ARM_CDSP_MRS_TARG) {
 		rd = (in & ARM_CDSP_RD_MASK) >> ARM_CDSP_RD_SHIFT;
-		if (snprintf(buf, buflen, "mrs%s %s, %s", arm_cond_names[cc],
+		if (dis_snprintf(buf, buflen, "mrs%s %s, %s", arm_cond_names[cc],
 		    arm_reg_names[rd],
 		    (in & ARM_CDSP_STATUS_RBIT) != 0 ? "spsr" : "cpsr") >=
 		    buflen)
@@ -1431,7 +1431,7 @@ arm_dis_status_regs(uint32_t in, char *buf, size_t buflen)
 	}
 
 	field = (in & ARM_CDSP_MSR_F_MASK) >> ARM_CDSP_MSR_F_SHIFT;
-	len = snprintf(buf, buflen, "msr%s %s_%s, ", arm_cond_names[cc],
+	len = dis_snprintf(buf, buflen, "msr%s %s_%s, ", arm_cond_names[cc],
 	    (in & ARM_CDSP_STATUS_RBIT) != 0 ? "spsr" : "cpsr",
 	    arm_cdsp_msr_field_names[field]);
 	if (len >= buflen)
@@ -1440,10 +1440,10 @@ arm_dis_status_regs(uint32_t in, char *buf, size_t buflen)
 	if (in & ARM_CDSP_MSR_ISIMM_MASK) {
 		imm = in & ARM_CDSP_MSR_IMM_MASK;
 		imm <<= (in & ARM_CDSP_MSR_RI_MASK) >> ARM_CDSP_MSR_RI_SHIFT;
-		len += snprintf(buf + len, buflen - len, "#%d", imm);
+		len += dis_snprintf(buf + len, buflen - len, "#%d", imm);
 	} else {
 		rm = in & ARM_CDSP_RM_MASK;
-		len += snprintf(buf + len, buflen - len, "%s",
+		len += dis_snprintf(buf + len, buflen - len, "%s",
 		    arm_reg_names[rm]);
 	}
 
@@ -1483,7 +1483,7 @@ arm_dis_cdsp_ext(uint32_t in, char *buf, size_t buflen)
 	    (in & ARM_CDSP_BEX_LOW_MASK) != ARM_CDSP_BEX_NLOW_TARG) {
 		rm = in & ARM_CDSP_RM_MASK;
 		imm = (in & ARM_CDSP_BEX_TYPE_MASK) >> ARM_CDSP_BEX_TYPE_SHIFT;
-		if (snprintf(buf, buflen, "b%s%s %s",
+		if (dis_snprintf(buf, buflen, "b%s%s %s",
 		    imm == ARM_CDSP_BEX_TYPE_X ? "x" :
 		    imm == ARM_CDSP_BEX_TYPE_J ? "xj" : "lx",
 		    arm_cond_names[cc], arm_reg_names[rm]) >= buflen)
@@ -1495,7 +1495,7 @@ arm_dis_cdsp_ext(uint32_t in, char *buf, size_t buflen)
 	if ((in & ARM_CDSP_CLZ_MASK) == ARM_CDSP_CLZ_TARG) {
 		rd = (in & ARM_CDSP_RD_MASK) >> ARM_CDSP_RD_SHIFT;
 		rm = in & ARM_CDSP_RM_MASK;
-		if (snprintf(buf, buflen, "clz%s %s, %s", arm_cond_names[cc],
+		if (dis_snprintf(buf, buflen, "clz%s %s, %s", arm_cond_names[cc],
 		    arm_reg_names[rd], arm_reg_names[rm]) >= buflen)
 			return (-1);
 		return (0);
@@ -1506,7 +1506,7 @@ arm_dis_cdsp_ext(uint32_t in, char *buf, size_t buflen)
 		rn = (in & ARM_CDSP_RN_MASK) >> ARM_CDSP_RN_SHIFT;
 		rm = in & ARM_CDSP_RM_MASK;
 		imm = (in & ARM_CDSP_SAT_OP_MASK) >> ARM_CDSP_SAT_OP_SHIFT;
-		if (snprintf(buf, buflen, "q%s%s %s, %s, %s",
+		if (dis_snprintf(buf, buflen, "q%s%s %s, %s, %s",
 		    arm_cdsp_sat_opnames[imm], arm_cond_names[cc],
 		    arm_reg_names[rd], arm_reg_names[rm],
 		    arm_reg_names[rn]) >= buflen)
@@ -1528,7 +1528,7 @@ arm_dis_cdsp_ext(uint32_t in, char *buf, size_t buflen)
 		    ARM_CDSP_BKPT_UIMM_SHIFT;
 		imm <<= 4;
 		imm |= (in & ARM_CDSP_BKPT_LIMM_MASK);
-		if (snprintf(buf, buflen, "bkpt %d", imm) >= buflen)
+		if (dis_snprintf(buf, buflen, "bkpt %d", imm) >= buflen)
 			return (1);
 		return (0);
 	}
@@ -1560,7 +1560,7 @@ arm_dis_cdsp_ext(uint32_t in, char *buf, size_t buflen)
 
 		switch (op) {
 		case 0:
-			len = snprintf(buf, buflen, "smla%s%s%s %s, %s, %s, %s",
+			len = dis_snprintf(buf, buflen, "smla%s%s%s %s, %s, %s, %s",
 			    (in & ARM_CDSP_SMUL_X_MASK) != 0 ? "t" : "b",
 			    (in & ARM_CDSP_SMUL_Y_MASK) != 0 ? "t" : "b",
 			    arm_cond_names[cc], arm_reg_names[rd],
@@ -1569,13 +1569,13 @@ arm_dis_cdsp_ext(uint32_t in, char *buf, size_t buflen)
 			break;
 		case 1:
 			if (in & ARM_CDSP_SMUL_X_MASK) {
-				len = snprintf(buf, buflen,
+				len = dis_snprintf(buf, buflen,
 				    "smulw%s%s %s, %s, %s",
 				    (in & ARM_CDSP_SMUL_Y_MASK) != 0 ? "t" :
 				    "b", arm_cond_names[cc], arm_reg_names[rd],
 				    arm_reg_names[rm], arm_reg_names[rs]);
 			} else {
-				len = snprintf(buf, buflen,
+				len = dis_snprintf(buf, buflen,
 				    "smlaw%s%s %s, %s, %s %s",
 				    (in & ARM_CDSP_SMUL_Y_MASK) != 0 ? "t" :
 				    "b", arm_cond_names[cc], arm_reg_names[rd],
@@ -1584,7 +1584,7 @@ arm_dis_cdsp_ext(uint32_t in, char *buf, size_t buflen)
 			}
 			break;
 		case 2:
-			len = snprintf(buf, buflen,
+			len = dis_snprintf(buf, buflen,
 			    "smlal%s%s%s %s, %s, %s, %s",
 			    (in & ARM_CDSP_SMUL_X_MASK) != 0 ? "t" : "b",
 			    (in & ARM_CDSP_SMUL_Y_MASK) != 0 ? "t" : "b",
@@ -1593,7 +1593,7 @@ arm_dis_cdsp_ext(uint32_t in, char *buf, size_t buflen)
 			    arm_reg_names[rs]);
 			break;
 		case 3:
-			len = snprintf(buf, buflen, "smul%s%s%s %s, %s, %s",
+			len = dis_snprintf(buf, buflen, "smul%s%s%s %s, %s, %s",
 			    (in & ARM_CDSP_SMUL_X_MASK) != 0 ? "t" : "b",
 			    (in & ARM_CDSP_SMUL_Y_MASK) != 0 ? "t" : "b",
 			    arm_cond_names[cc], arm_reg_names[rd],
@@ -1645,7 +1645,7 @@ arm_dis_coproc_drt(uint32_t in, char *buf, size_t buflen)
 	else
 		ccn = arm_cond_names[cc];
 
-	len = snprintf(buf, buflen, "%s%s %s, #%d, %s, %s, c%s",
+	len = dis_snprintf(buf, buflen, "%s%s %s, #%d, %s, %s, c%s",
 	    (in & ARM_COPROC_DRT_DIR_MASK) != 0 ? "mrrc" : "mcrr",
 	    ccn, arm_coproc_names[coproc], op, arm_reg_names[rd],
 	    arm_reg_names[rn], arm_reg_names[rm]);
@@ -1711,7 +1711,7 @@ arm_dis_coproc_lsdrt(uint32_t in, char *buf, size_t buflen)
 	else
 		ccn = arm_cond_names[cc];
 
-	len = snprintf(buf, buflen, "%s%s%s %s, c%s, ",
+	len = dis_snprintf(buf, buflen, "%s%s%s %s, c%s, ",
 	    lbit != 0 ? "ldc" : "stc", ccn, nbit != 0 ? "l" : "",
 	    arm_coproc_names[coproc], arm_reg_names[rd]);
 	if (len >= buflen)
@@ -1719,16 +1719,16 @@ arm_dis_coproc_lsdrt(uint32_t in, char *buf, size_t buflen)
 
 	if (pbit != 0) {
 		imm *= 4;
-		len += snprintf(buf + len, buflen - len, "[%s, #%s%d]%s",
+		len += dis_snprintf(buf + len, buflen - len, "[%s, #%s%d]%s",
 		    arm_reg_names[rn],
 		    ubit != 0 ? "" : "-", imm,
 		    wbit != 0 ? "!" : "");
 	} else if (wbit != 0) {
 		imm *= 4;
-		len += snprintf(buf + len, buflen - len, "[%s], #%s%d",
+		len += dis_snprintf(buf + len, buflen - len, "[%s], #%s%d",
 		    arm_reg_names[rn], ubit != 0 ? "" : "-", imm);
 	} else {
-		len += snprintf(buf + len, buflen - len, "[%s], { %d }",
+		len += dis_snprintf(buf + len, buflen - len, "[%s], { %d }",
 		    arm_reg_names[rn], imm);
 	}
 	return (len >= buflen ? -1 : 0);
@@ -1766,7 +1766,7 @@ arm_dis_coproc_dp(uint32_t in, char *buf, size_t buflen)
 	else
 		ccn = arm_cond_names[cc];
 
-	if (snprintf(buf, buflen, "cdp%s %s, #%d, c%s, c%s, c%s, #%d", ccn,
+	if (dis_snprintf(buf, buflen, "cdp%s %s, #%d, c%s, c%s, c%s, #%d", ccn,
 	    arm_coproc_names[coproc], op1, arm_reg_names[rd],
 	    arm_reg_names[rn], arm_reg_names[rm], op2) >= buflen)
 		return (-1);
@@ -1807,7 +1807,7 @@ arm_dis_coproc_rt(uint32_t in, char *buf, size_t buflen)
 	else
 		ccn = arm_cond_names[cc];
 
-	len = snprintf(buf, buflen, "%s%s %s, #%d, %s, c%s, c%s",
+	len = dis_snprintf(buf, buflen, "%s%s %s, #%d, %s, c%s, c%s",
 	    (in & ARM_COPROC_CRT_DIR_MASK) != 0 ? "mrc" : "mcr", ccn,
 	    arm_coproc_names[coproc], op1, arm_reg_names[rd],
 	    arm_reg_names[rn], arm_reg_names[rm]);
@@ -1815,7 +1815,7 @@ arm_dis_coproc_rt(uint32_t in, char *buf, size_t buflen)
 		return (-1);
 
 	if (op2 != 0)
-		if (snprintf(buf + len, buflen - len, ", #%d", op2) >=
+		if (dis_snprintf(buf + len, buflen - len, ", #%d", op2) >=
 		    buflen - len)
 			return (-1);
 	return (0);
@@ -1862,26 +1862,26 @@ arm_dis_uncond_insn(uint32_t in, char *buf, size_t buflen)
 			return (-1);
 
 		if (imm != 0)
-			len = snprintf(buf, buflen, "cps%s %s%s%s%s",
+			len = dis_snprintf(buf, buflen, "cps%s %s%s%s%s",
 			    imm == 2 ? "ie" : "id",
 			    (in & ARM_UNI_CPS_A_MASK) ? "a" : "",
 			    (in & ARM_UNI_CPS_I_MASK) ? "i" : "",
 			    (in & ARM_UNI_CPS_F_MASK) ? "f" : "",
 			    (in & ARM_UNI_CPS_MMOD_MASK) ? " ," : "");
 		else
-			len = snprintf(buf, buflen, "cps ");
+			len = dis_snprintf(buf, buflen, "cps ");
 		if (len >= buflen)
 			return (-1);
 
 		if (in & ARM_UNI_CPS_MMOD_MASK)
-			if (snprintf(buf + len, buflen - len, "#%d",
+			if (dis_snprintf(buf + len, buflen - len, "#%d",
 			    in & ARM_UNI_CPS_MODE_MASK) >= buflen - len)
 				return (-1);
 		return (0);
 	}
 
 	if ((in & ARM_UNI_SE_MASK) == ARM_UNI_SE_TARG) {
-		if (snprintf(buf, buflen, "SETEND %s",
+		if (dis_snprintf(buf, buflen, "SETEND %s",
 		    (in & ARM_UNI_SE_BE_MASK) ? "be" : "le") >= buflen)
 			return (-1);
 		return (0);
@@ -1897,7 +1897,7 @@ arm_dis_uncond_insn(uint32_t in, char *buf, size_t buflen)
 	if ((in & ARM_UNI_PLD_MASK) == ARM_UNI_PLD_TARG) {
 		rn = (in & ARM_LS_RN_MASK) >> ARM_LS_RN_SHIFT;
 		if ((in & ARM_LS_IBIT_MASK) == 0) {
-			if (snprintf(buf, buflen, "pld [%s, #%s%d",
+			if (dis_snprintf(buf, buflen, "pld [%s, #%s%d",
 			    arm_reg_names[rn],
 			    (in & ARM_LS_UBIT_MASK) != 0 ? "" : "-",
 			    in & ARM_LS_IMM_MASK) >= buflen)
@@ -1906,7 +1906,7 @@ arm_dis_uncond_insn(uint32_t in, char *buf, size_t buflen)
 		}
 
 		rm = in & ARM_LS_REG_RM_MASK;
-		len = snprintf(buf, buflen, "pld [%s, %s%s", arm_reg_names[rn],
+		len = dis_snprintf(buf, buflen, "pld [%s, %s%s", arm_reg_names[rn],
 		    (in & ARM_LS_UBIT_MASK) != 0 ? "" : "-",
 		    arm_reg_names[rm]);
 		if (len >= buflen)
@@ -1921,18 +1921,18 @@ arm_dis_uncond_insn(uint32_t in, char *buf, size_t buflen)
 			if (imm == 0 && sc == DPI_S_ROR)
 				sc = DPI_S_RRX;
 
-			len += snprintf(buf + len, buflen - len, "%s",
+			len += dis_snprintf(buf + len, buflen - len, "%s",
 			    arm_dpi_shifts[sc]);
 			if (len >= buflen)
 				return (-1);
 			if (sc != DPI_S_RRX) {
-				len += snprintf(buf + len, buflen - len,
+				len += dis_snprintf(buf + len, buflen - len,
 				    " #%d", imm);
 				if (len >= buflen)
 					return (-1);
 			}
 		}
-		if (snprintf(buf + len, buflen - len, "]") >= buflen - len)
+		if (dis_snprintf(buf + len, buflen - len, "]") >= buflen - len)
 			return (-1);
 		return (0);
 	}
@@ -1942,7 +1942,7 @@ arm_dis_uncond_insn(uint32_t in, char *buf, size_t buflen)
 	 */
 	if ((in & ARM_UNI_SRS_MASK) == ARM_UNI_SRS_TARG) {
 		imm = (in & ARM_LSM_ADDR_MASK) >> ARM_LSM_ADDR_SHIFT;
-		if (snprintf(buf, buflen, "srs%s #%d%s",
+		if (dis_snprintf(buf, buflen, "srs%s #%d%s",
 		    arm_lsm_mode_names[imm],
 		    in & ARM_UNI_SRS_MODE_MASK,
 		    (in & ARM_UNI_SRS_WBIT_MASK) != 0 ? "!" : "") >= buflen)
@@ -1957,7 +1957,7 @@ arm_dis_uncond_insn(uint32_t in, char *buf, size_t buflen)
 	if ((in & ARM_UNI_RFE_MASK) == ARM_UNI_RFE_TARG) {
 		imm = (in & ARM_LSM_ADDR_MASK) >> ARM_LSM_ADDR_SHIFT;
 		rn = (in & ARM_LS_RN_MASK) >> ARM_LS_RN_SHIFT;
-		if (snprintf(buf, buflen, "rfe%s %s%s", arm_lsm_mode_names[imm],
+		if (dis_snprintf(buf, buflen, "rfe%s %s%s", arm_lsm_mode_names[imm],
 		    arm_reg_names[rn],
 		    (in & ARM_UNI_RFE_WBIT_MASK) != 0 ? "!" : "") >= buflen)
 			return (-1);
@@ -1965,7 +1965,7 @@ arm_dis_uncond_insn(uint32_t in, char *buf, size_t buflen)
 	}
 
 	if ((in & ARM_UNI_BLX_MASK) == ARM_UNI_BLX_TARG) {
-		if (snprintf(buf, buflen, "blx %d",
+		if (dis_snprintf(buf, buflen, "blx %d",
 		    in & ARM_UNI_BLX_IMM_MASK) >= buflen)
 			return (-1);
 		return (0);
@@ -2010,7 +2010,7 @@ arm_dis_branch(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 	else
 		addr &= ARM_BRANCH_POS_SIGN;
 	addr <<= 2;
-	if ((len = snprintf(buf, buflen, "b%s%s %d",
+	if ((len = dis_snprintf(buf, buflen, "b%s%s %d",
 	    (in & ARM_BRANCH_LBIT_MASK) != 0 ? "l" : "",
 	    arm_cond_names[cc], (int)addr)) >= buflen)
 		return (-1);
@@ -2018,7 +2018,7 @@ arm_dis_branch(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 	/* Per the ARM manuals, we have to account for the extra 8 bytes here */
 	if (dhp->dh_lookup(dhp->dh_data, dhp->dh_addr + (int)addr + 8, NULL, 0,
 	    NULL, NULL) == 0) {
-		len += snprintf(buf + len, buflen - len, "\t<");
+		len += dis_snprintf(buf + len, buflen - len, "\t<");
 		if (len >= buflen)
 			return (-1);
 		dhp->dh_lookup(dhp->dh_data, dhp->dh_addr + (int)addr + 8,
@@ -2068,7 +2068,7 @@ arm_dis_padd(uint32_t in, char *buf, size_t buflen)
 	rd = (in & ARM_MEDIA_RD_MASK) >> ARM_MEDIA_RD_SHIFT;
 	rm = in & ARM_MEDIA_RM_MASK;
 
-	if (snprintf(buf, buflen, "%s%%s %s, %s, %s", pstr, istr,
+	if (dis_snprintf(buf, buflen, "%s%%s %s, %s, %s", pstr, istr,
 	    arm_cond_names[cc], arm_reg_names[rd], arm_reg_names[rn],
 	    arm_reg_names[rm]) >= buflen)
 		return (-1);
@@ -2126,12 +2126,12 @@ arm_dis_extend(uint32_t in, char *buf, size_t buflen)
 	}
 
 	if (rn == ARM_REG_R15) {
-		len = snprintf(buf, buflen, "%s%s%s %s, %s",
+		len = dis_snprintf(buf, buflen, "%s%s%s %s, %s",
 		    sbit != 0 ? "u" : "s",
 		    opn, arm_cond_names[cc], arm_reg_names[rd],
 		    arm_reg_names[rn]);
 	} else {
-		len = snprintf(buf, buflen, "%s%s%s %s, %s, %s",
+		len = dis_snprintf(buf, buflen, "%s%s%s %s, %s, %s",
 		    sbit != 0 ? "u" : "s",
 		    opn, arm_cond_names[cc], arm_reg_names[rd],
 		    arm_reg_names[rn], arm_reg_names[rm]);
@@ -2140,7 +2140,7 @@ arm_dis_extend(uint32_t in, char *buf, size_t buflen)
 	if (len >= buflen)
 		return (-1);
 
-	if (snprintf(buf + len, buflen - len, "%s",
+	if (dis_snprintf(buf + len, buflen - len, "%s",
 	    arm_extend_rot_names[rot]) >= buflen - len)
 		return (-1);
 	return (0);
@@ -2173,7 +2173,7 @@ arm_dis_media(uint32_t in, char *buf, size_t buflen)
 			rm = in & ARM_MEDIA_RM_MASK;
 			op1 = (in & ARM_MEDIA_HPACK_SHIFT_MASK) >>
 			    ARM_MEDIA_HPACK_SHIFT_IMM;
-			len = snprintf(buf, buflen, "%s%s %s, %s, %s",
+			len = dis_snprintf(buf, buflen, "%s%s %s, %s, %s",
 			    (in & ARM_MEDIA_HPACK_OP_MASK) != 0 ?
 			    "pkhtb" : "pkhbt", arm_cond_names[cc],
 			    arm_reg_names[rd], arm_reg_names[rn],
@@ -2183,10 +2183,10 @@ arm_dis_media(uint32_t in, char *buf, size_t buflen)
 
 			if (op1 != 0) {
 				if (in & ARM_MEDIA_HPACK_OP_MASK)
-					len += snprintf(buf + len, buflen - len,
+					len += dis_snprintf(buf + len, buflen - len,
 					    ", asr %d", op1);
 				else
-					len += snprintf(buf + len, buflen - len,
+					len += dis_snprintf(buf + len, buflen - len,
 					    ", lsl %d", op1);
 			}
 			return (len >= buflen ? -1 : 0);
@@ -2199,7 +2199,7 @@ arm_dis_media(uint32_t in, char *buf, size_t buflen)
 			    ARM_MEDIA_SAT_IMM_SHIFT;
 			op2 = (in & ARM_MEDIA_SAT_SHI_MASK) >>
 			    ARM_MEDIA_SAT_SHI_SHIFT;
-			len = snprintf(buf, buflen, "%s%s %s, #%d, %s",
+			len = dis_snprintf(buf, buflen, "%s%s %s, #%d, %s",
 			    (in & ARM_MEDIA_SAT_U_MASK) != 0 ? "usat" : "ssat",
 			    arm_cond_names[cc], arm_reg_names[rd], op1,
 			    arm_reg_names[rm]);
@@ -2215,7 +2215,7 @@ arm_dis_media(uint32_t in, char *buf, size_t buflen)
 			if (op2 != 0 || (in & ARM_MEDIA_SAT_STYPE_MASK) == 1) {
 				if (op2 == 0)
 					op2 = 32;
-				if (snprintf(buf + len, buflen - len,
+				if (dis_snprintf(buf + len, buflen - len,
 				    ", %s #%d",
 				    (in & ARM_MEDIA_SAT_STYPE_MASK) != 0 ?
 				    "asr" : "lsl", op2) >= buflen - len)
@@ -2228,7 +2228,7 @@ arm_dis_media(uint32_t in, char *buf, size_t buflen)
 			rd = (in & ARM_MEDIA_RD_MASK) >> ARM_MEDIA_RD_SHIFT;
 			rm = in & ARM_MEDIA_RM_MASK;
 			op1 = (in & ARM_MEDIA_RN_MASK) >> ARM_MEDIA_RN_SHIFT;
-			if (snprintf(buf, buflen, "%s%s %s, #%d, %s",
+			if (dis_snprintf(buf, buflen, "%s%s %s, #%d, %s",
 			    (in & ARM_MEDIA_SAT_U_MASK) != 0 ?
 			    "usat16" : "ssat16",
 			    arm_cond_names[cc], arm_reg_names[rd], op1,
@@ -2240,7 +2240,7 @@ arm_dis_media(uint32_t in, char *buf, size_t buflen)
 		if ((in & ARM_MEDIA_REV_MASK) == ARM_MEDIA_REV_TARG) {
 			rd = (in & ARM_MEDIA_RD_MASK) >> ARM_MEDIA_RD_SHIFT;
 			rm = in & ARM_MEDIA_RM_MASK;
-			if (snprintf(buf, buflen, "rev%s %s, %s",
+			if (dis_snprintf(buf, buflen, "rev%s %s, %s",
 			    arm_cond_names[cc], arm_reg_names[rd],
 			    arm_reg_names[rd]) >= buflen)
 				return (-1);
@@ -2250,7 +2250,7 @@ arm_dis_media(uint32_t in, char *buf, size_t buflen)
 		if ((in & ARM_MEDIA_BRPH_MASK) == ARM_MEDIA_BRPH_TARG) {
 			rd = (in & ARM_MEDIA_RD_MASK) >> ARM_MEDIA_RD_SHIFT;
 			rm = in & ARM_MEDIA_RM_MASK;
-			if (snprintf(buf, buflen, "rev16%s %s, %s",
+			if (dis_snprintf(buf, buflen, "rev16%s %s, %s",
 			    arm_cond_names[cc], arm_reg_names[rd],
 			    arm_reg_names[rd]) >= buflen)
 				return (-1);
@@ -2260,7 +2260,7 @@ arm_dis_media(uint32_t in, char *buf, size_t buflen)
 		if ((in & ARM_MEDIA_BRSH_MASK) == ARM_MEDIA_BRSH_TARG) {
 			rd = (in & ARM_MEDIA_RD_MASK) >> ARM_MEDIA_RD_SHIFT;
 			rm = in & ARM_MEDIA_RM_MASK;
-			if (snprintf(buf, buflen, "revsh%s %s, %s",
+			if (dis_snprintf(buf, buflen, "revsh%s %s, %s",
 			    arm_cond_names[cc], arm_reg_names[rd],
 			    arm_reg_names[rd]) >= buflen)
 				return (-1);
@@ -2271,7 +2271,7 @@ arm_dis_media(uint32_t in, char *buf, size_t buflen)
 			rn = (in & ARM_MEDIA_RN_MASK) >> ARM_MEDIA_RN_SHIFT;
 			rd = (in & ARM_MEDIA_RD_MASK) >> ARM_MEDIA_RD_SHIFT;
 			rm = in & ARM_MEDIA_RM_MASK;
-			if (snprintf(buf, buflen, "sel%s %s, %s, %s",
+			if (dis_snprintf(buf, buflen, "sel%s %s, %s, %s",
 			    arm_cond_names[cc], arm_reg_names[rd],
 			    arm_reg_names[rn], arm_reg_names[rm]) >= buflen)
 				return (-1);
@@ -2306,13 +2306,13 @@ arm_dis_media(uint32_t in, char *buf, size_t buflen)
 			if (op2 != 0x0 && op2 != 0x1)
 				return (-1);
 			if (rn == ARM_REG_R15) {
-				len = snprintf(buf, buflen, "%s%s%s %s, %s, %s",
+				len = dis_snprintf(buf, buflen, "%s%s%s %s, %s, %s",
 				    op2 != 0 ? "smusd" : "smuad",
 				    xbit != 0 ? "x" : "x",
 				    arm_cond_names[cc], arm_reg_names[rd],
 				    arm_reg_names[rm], arm_reg_names[rs]);
 			} else {
-				len = snprintf(buf, buflen,
+				len = dis_snprintf(buf, buflen,
 				    "%s%s%s %s, %s, %s, %s",
 				    op2 != 0 ? "smlsd" : "smlad",
 				    xbit != 0 ? "x" : "",
@@ -2324,7 +2324,7 @@ arm_dis_media(uint32_t in, char *buf, size_t buflen)
 		} else if (op1 == 0x8) {
 			if (op2 != 0x0)
 				return (-1);
-			len = snprintf(buf, buflen, "smlald%s%s %s, %s, %s, %s",
+			len = dis_snprintf(buf, buflen, "smlald%s%s %s, %s, %s, %s",
 			    xbit != 0 ? "x" : "",
 			    arm_cond_names[cc], arm_reg_names[rn],
 			    arm_reg_names[rd], arm_reg_names[rm],
@@ -2352,12 +2352,12 @@ arm_dis_media(uint32_t in, char *buf, size_t buflen)
 		rm = in & ARM_MEDIA_RM_MASK;
 
 		if (rn != ARM_REG_R15)
-			len = snprintf(buf, buflen, "usada8%s %s, %s, %s, %s",
+			len = dis_snprintf(buf, buflen, "usada8%s %s, %s, %s, %s",
 			    arm_cond_names[cc], arm_reg_names[rd],
 			    arm_reg_names[rm], arm_reg_names[rs],
 			    arm_reg_names[rn]);
 		else
-			len = snprintf(buf, buflen, "usad8%s %s, %s, %s",
+			len = dis_snprintf(buf, buflen, "usad8%s %s, %s, %s",
 			    arm_cond_names[cc], arm_reg_names[rd],
 			    arm_reg_names[rm], arm_reg_names[rs]);
 		return (len >= buflen ? -1 : 0);
@@ -2530,7 +2530,7 @@ arm_dis(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 			 * lower 24 bits are the interrupt number. It's also
 			 * valid for it to run with a condition code.
 			 */
-			if (snprintf(buf, buflen, "swi%s %d",
+			if (dis_snprintf(buf, buflen, "swi%s %d",
 			    arm_cond_names[cc],
 			    in & ARM_SWI_IMM_MASK) >= buflen)
 				return (-1);
