@@ -18,7 +18,7 @@
  */
 extern void bop_panic(const char *);
 
-#define	STUB(x) void x(void) { bop_panic(#x); }
+#define	STUB(x) void x(void) { bop_panic("stub called! " #x); }
 
 STUB(bcmp)
 STUB(kdi_flush_caches)
