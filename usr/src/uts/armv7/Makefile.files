@@ -43,6 +43,7 @@ OS_OBJS +=			\
 	flush.o			\
 	fakebop.o		\
 	intr.o			\
+	hat_arm.o		\
 	lgrpplat.o		\
 	mach_sysconfig.o	\
 	mem_config_stubs.o	\

@@ -229,7 +229,7 @@ STUB(sendto)
 STUB(sir_on)
 STUB(subyte)
 STUB(idmap_get_door)
-STUB(vpanic)
+/* STUB(vpanic) */
 STUB(pagezero)
 STUB(i_ddi_remove_softint)
 STUB(dcopy_free)

@@ -95,11 +95,7 @@ cpuid_fill_onecache(arm_cpuid_t *cpd, int level, boolean_t icache)
 	    CCSIDR_ASSOC_SHIFT) + 1;
 	cache->acc_linesz = sizeof (uint32_t) << (extract(ccsidr,
 	    CCSIDR_LINESIZE_MASK, CCSIDR_LINESIZE_SHIFT) + 2);
-
-/*
- * XXX?
-#warning "set acc_size?"
- */
+	cache->acc_size = cache->acc_sets * cache->acc_assoc * cache->acc_linesz;
 }
 
 static void

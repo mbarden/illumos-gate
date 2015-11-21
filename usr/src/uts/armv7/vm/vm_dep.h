@@ -36,9 +36,24 @@ extern "C" {
 /* tick value that should be used for random values */
 extern u_longlong_t randtick(void);
 
-#define	PLCNT_SZ(ctrs_sz)	panic("plcnt_sz")
+  /* XXX implement for DEBUG later */
+#ifdef DEBUG
+
+#define	PLCNT_SZ(ctrs_sz) {						\
+	int	szc;							\
+	for (szc = 0; szc < mmu_page_sizes; szc++) {			\
+		int	colors = page_get_pagecolors(szc);		\
+		ctrs_sz += (max_mem_nodes * colors * sizeof (pgcnt_t));	\
+	}								\
+}
 
 #define	PLCNT_INIT(addr) panic("plcnt_init")
+
+#else
+
+#define	PLCNT_SZ(ctrs_sz)
+
+#endif
 
 #define	PLCNT_INCR(pp, mnode, mtype, szc, flags)	panic("plcnt_incr")
 #define	PLCNT_DECR(pp, mnode, mtype, szc, flags)	panic("plcnt_decr")
@@ -127,7 +142,11 @@ extern kmutex_t	*cpc_mutex[NPC_MUTEX];
  * come into play here?
  */
 #define	HPM_COUNTERS_LIMITS(mnodes, pyysbase, physmax, first)	\
-	panic("hpm_counters_list")
+	(physbase) = mem_node_config[(mnode)].physbase;		\
+	(physmax) = mem_node_config[(mnode)].physmax;		\
+	(first) = (mnode);
+
+	/* panic("hpm_counters_list") */
 
 #define	PAGE_CTRS_WRITE_LOCK(mnode)	panic("page_ctrs_write_lock")
 #define	PAGE_CTRS_WRITE_UNLOCK(mnode)	panic("page_ctrs_write_unlock")
@@ -412,6 +431,10 @@ struct vmm_vmstats_str {
 extern struct vmm_vmstats_str vmm_vmstats;
 #endif	/* VM_STATS */
 
+extern size_t page_coloring_init(uint_t, int, int);
+extern void page_coloring_setup(caddr_t);
+extern size_t page_ctrs_sz(void);
+extern uint_t page_get_pagecolors(uint_t);
 
 #ifdef __cplusplus
 }
