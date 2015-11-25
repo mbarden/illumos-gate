@@ -36,7 +36,25 @@ extern "C" {
 /* tick value that should be used for random values */
 extern u_longlong_t randtick(void);
 
-  /* XXX implement for DEBUG later */
+/*
+ * page list count per mnode and type.
+ */
+typedef	struct {
+	pgcnt_t	plc_mt_pgmax;		/* max page cnt */
+	pgcnt_t plc_mt_clpgcnt;		/* cache list cnt */
+	pgcnt_t plc_mt_flpgcnt;		/* free list cnt - small pages */
+	pgcnt_t plc_mt_lgpgcnt;		/* free list cnt - large pages */
+#ifdef DEBUG
+	struct {
+		pgcnt_t plc_mts_pgcnt;	/* per page size count */
+		int	plc_mts_colors;
+		pgcnt_t	*plc_mtsc_pgcnt; /* per color bin count */
+	} plc_mts[MMU_PAGE_SIZES];
+#endif
+} plcnt_t[MAX_MEM_NODES];
+
+extern plcnt_t plcnt;
+
 #ifdef DEBUG
 
 #define	PLCNT_SZ(ctrs_sz) {						\
@@ -47,16 +65,63 @@ extern u_longlong_t randtick(void);
 	}								\
 }
 
-#define	PLCNT_INIT(addr) panic("plcnt_init")
+#define	PLCNT_INIT(base) {						\
+	int	mn, mt, szc, colors;					\
+	for (szc = 0; szc < mmu_page_sizes; szc++) {			\
+		colors = page_get_pagecolors(szc);			\
+		for (mn = 0; mn < max_mem_nodes; mn++) {		\
+			plcnt[mn].plc_mts[szc].				\
+			    plc_mts_colors = colors;			\
+			plcnt[mn].plc_mts[szc].				\
+			    plc_mtsc_pgcnt = (pgcnt_t *)base;		\
+			base += (colors * sizeof (pgcnt_t));		\
+		}							\
+	}								\
+}
+
+#define	PLCNT_DO(pp, mn, mtype, szc, cnt, flags) {			\
+	int	bin = PP_2_BIN(pp);					\
+	if (flags & PG_CACHE_LIST)					\
+		atomic_add_long(&plcnt[mn].plc_mt_clpgcnt, cnt);	\
+	else if (szc)							\
+		atomic_add_long(&plcnt[mn].plc_mt_lgpgcnt, cnt);	\
+	else								\
+		atomic_add_long(&plcnt[mn].plc_mt_flpgcnt, cnt);	\
+	atomic_add_long(&plcnt[mn].plc_mts[szc].plc_mts_pgcnt,	\
+	    cnt);							\
+	atomic_add_long(&plcnt[mn].plc_mts[szc].			\
+	    plc_mtsc_pgcnt[bin], cnt);					\
+}
 
 #else
 
 #define	PLCNT_SZ(ctrs_sz)
 
+#define	PLCNT_INIT(base)
+
+/* PG_FREE_LIST may not be explicitly set in flags for large pages */
+
+#define	PLCNT_DO(pp, mn, mtype, szc, cnt, flags) {			\
+	if (flags & PG_CACHE_LIST)					\
+		atomic_add_long(&plcnt[mn].plc_mt_clpgcnt, cnt);	\
+	else if (szc)							\
+		atomic_add_long(&plcnt[mn].plc_mt_lgpgcnt, cnt);	\
+	else								\
+		atomic_add_long(&plcnt[mn].plc_mt_flpgcnt, cnt);	\
+}
+
 #endif
 
-#define	PLCNT_INCR(pp, mnode, mtype, szc, flags)	panic("plcnt_incr")
-#define	PLCNT_DECR(pp, mnode, mtype, szc, flags)	panic("plcnt_decr")
+
+#define	PLCNT_INCR(pp, mn, mtype, szc, flags) {				\
+	long	cnt = (1 << PAGE_BSZS_SHIFT(szc));			\
+	PLCNT_DO(pp, mn, mtype, szc, cnt, flags);			\
+}
+
+#define	PLCNT_DECR(pp, mn, mtype, szc, flags) {				\
+	long	cnt = ((-1) << PAGE_BSZS_SHIFT(szc));			\
+	PLCNT_DO(pp, mn, mtype, szc, cnt, flags);			\
+}
 
 /*
  * Macro to update page list max counts. This is a no-op on x86, not on SPARC.
@@ -70,8 +135,29 @@ extern u_longlong_t randtick(void);
  * when memory is added (kphysm_add_memory_dynamic) or deleted
  * (kphysm_del_cleanup).
  */
-extern void plcnt_modify_max(pfn_t, long);
-#define	PLCNT_MODIFY_MAX(pfn, cnt)	plcnt_modify_max(pfn, cnt)
+
+/*
+ * macro to modify the page list max counts when memory is added to
+ * the page lists during startup (add_physmem) or during a DR operation
+ * when memory is added (kphysm_add_memory_dynamic) or deleted
+ * (kphysm_del_cleanup).
+ */
+#define	PLCNT_MODIFY_MAX(pfn, cnt) {					\
+	spgcnt_t _cnt = (spgcnt_t)(cnt);				\
+	pgcnt_t _acnt = ABS(_cnt);					\
+	int _mn;							\
+	pgcnt_t _np;							\
+	pfn_t _pfn = (pfn);						\
+	pfn_t _endpfn = _pfn + _acnt;					\
+	while (_pfn < _endpfn) {					\
+		_mn = PFN_2_MEM_NODE(_pfn);				\
+		_np = MIN(_endpfn, mem_node_config[_mn].physmax + 1) -	\
+		    _pfn;						\
+		_pfn += _np;						\
+		atomic_add_long(&plcnt[_mn].plc_mt_pgmax,		\
+		    (_cnt < 0) ? -_np : _np);				\
+	}								\
+}
 
 /*
  * These macros are used in dealing with the page counters and its candidate
@@ -434,8 +520,10 @@ extern struct vmm_vmstats_str vmm_vmstats;
 extern size_t page_coloring_init(uint_t, int, int);
 extern void page_coloring_setup(caddr_t);
 extern size_t page_ctrs_sz(void);
+extern caddr_t page_ctrs_alloc(caddr_t);
 extern uint_t page_get_pagecolors(uint_t);
 
+extern uintptr_t armv7_va_to_pa(uintptr_t va); /* XXX where to put this? */
 #ifdef __cplusplus
 }
 #endif

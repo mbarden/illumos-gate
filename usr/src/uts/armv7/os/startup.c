@@ -20,11 +20,12 @@
 #include <sys/promif.h>
 #include <sys/systm.h>
 #include <sys/memnode.h>
+#include <sys/memlist_impl.h>
 #include <sys/sysmacros.h>
 #include <vm/page.h>
 #include <vm/hat_pte.h>
 #include <vm/vm_dep.h>
-
+#include <vm/seg_kmem.h>
 /*
  *	32-bit Kernel's Virtual memory layout.
  *		+-----------------------+
@@ -62,6 +63,8 @@
  *
  * + Item does not exist at this time.
  */
+
+static pgcnt_t kphysm_init(page_t *pp, pgcnt_t npages);
 
 extern void pcf_init(void);
 
@@ -115,7 +118,8 @@ static char *prm_dbg_str[] = {
 #define panic bop_panic
 #define	PRM_DEBUG(q)	if (prom_debug) 	\
 	prom_printf(prm_dbg_str[sizeof (q) >> 3], "startup.c", __LINE__, #q, q);
-
+#define	PRM_POINT(q)	if (prom_debug) 	\
+	prom_printf("%s:%d: %s\n", "startup.c", __LINE__, q);
 
 #define	ROUND_UP_PAGE(x)	\
 	((uintptr_t)P2ROUNDUP((uintptr_t)(x), (uintptr_t)MMU_PAGESIZE))
@@ -219,6 +223,154 @@ startup_init()
 
 extern void mmu_init(void);
 extern int size_pse_array(pgcnt_t, int);
+
+/*
+ * Copy in a memory list from boot to kernel, with a filter function
+ * to remove pages. The filter function can increase the address and/or
+ * decrease the size to filter out pages.  It will also align addresses and
+ * sizes to PAGESIZE.
+ */
+void
+copy_memlist_filter(
+	struct memlist *src,
+	struct memlist **dstp,
+	void (*filter)(uint64_t *, uint64_t *))
+{
+	struct memlist *dst, *prev;
+	uint64_t addr;
+	uint64_t size;
+	uint64_t eaddr;
+
+	dst = *dstp;
+	prev = dst;
+
+	/*
+	 * Move through the memlist applying a filter against
+	 * each range of memory. Note that we may apply the
+	 * filter multiple times against each memlist entry.
+	 */
+	for (; src; src = src->ml_next) {
+		addr = P2ROUNDUP(src->ml_address, PAGESIZE);
+		eaddr = P2ALIGN(src->ml_address + src->ml_size, PAGESIZE);
+		while (addr < eaddr) {
+			size = eaddr - addr;
+			if (filter != NULL)
+				filter(&addr, &size);
+			if (size == 0)
+				break;
+			dst->ml_address = addr;
+			dst->ml_size = size;
+			dst->ml_next = 0;
+			if (prev == dst) {
+				dst->ml_prev = 0;
+				dst++;
+			} else {
+				dst->ml_prev = prev;
+				prev->ml_next = dst;
+				dst++;
+				prev++;
+			}
+			addr += size;
+		}
+	}
+
+	*dstp = dst;
+}
+
+/*
+ * Callback for copy_memlist_filter() to filter nucleus, kadb/kmdb, (ie.
+ * everything mapped above KERNEL_TEXT) pages from phys_avail. Note it
+ * also filters out physical page zero.  There is some reliance on the
+ * boot loader allocating only a few contiguous physical memory chunks.
+ */
+static void
+avail_filter(uint64_t *addr, uint64_t *size)
+{
+	uintptr_t va;
+	uintptr_t next_va;
+	pfn_t pfn;
+	uint64_t pfn_addr;
+	uint64_t pfn_eaddr;
+	uint_t prot;
+	size_t len;
+	uint_t change;
+
+	if (prom_debug)
+		prom_printf("\tFilter: in: a=%" PRIx64 ", s=%" PRIx64 "\n",
+		    *addr, *size);
+
+	/*
+	 * page zero is required for BIOS.. never make it available
+	 */
+	if (*addr == 0) {
+		*addr += MMU_PAGESIZE;
+		*size -= MMU_PAGESIZE;
+	}
+
+	/*
+	 * First we trim from the front of the range. Since kbm_probe()
+	 * walks ranges in virtual order, but addr/size are physical, we need
+	 * to the list until no changes are seen.  This deals with the case
+	 * where page "p" is mapped at v, page "p + PAGESIZE" is mapped at w
+	 * but w < v.
+	 */
+	do {
+		change = 0;
+		for (va = KERNEL_TEXT;
+		    *size > 0;
+		    va = next_va) {
+
+			len = MMU_PAGESIZE;
+			next_va = va + len;
+			/* if (prom_debug) */
+			/* 	prom_printf("armv7_va_to_pa 0x%lx\n", va); */
+
+			pfn_addr = armv7_va_to_pa(va);
+			/* if (prom_debug) */
+			/* 	prom_printf("armv7_va_to_pa returned 0x%" PRIx64 "\n", pfn_addr); */
+
+			if ((pfn_addr & 1) != 0)
+				break;
+			pfn_addr &= MMU_STD_PAGEMASK;
+
+			pfn_eaddr = pfn_addr + len;
+
+			if (pfn_addr <= *addr && pfn_eaddr > *addr) {
+				change = 1;
+				while (*size > 0 && len > 0) {
+					*addr += MMU_PAGESIZE;
+					*size -= MMU_PAGESIZE;
+					len -= MMU_PAGESIZE;
+				}
+			}
+		}
+		if (change && prom_debug)
+			prom_printf("\t\ttrim: a=%" PRIx64 ", s=%" PRIx64 "\n",
+			    *addr, *size);
+	} while (change);
+
+	/*
+	 * Trim pages from the end of the range.
+	 */
+	for (va = KERNEL_TEXT;
+	    *size > 0;
+	    va = next_va) {
+
+		len = MMU_PAGESIZE;
+		next_va = va + len;
+		pfn_addr = armv7_va_to_pa(va);
+		if ((pfn_addr & 1) != 0)
+			break;
+		pfn_addr &= MMU_STD_PAGEMASK;
+
+		if (pfn_addr >= *addr && pfn_addr < *addr + *size)
+			*size = pfn_addr - *addr;
+	}
+
+	if (prom_debug)
+		prom_printf("\tFilter out: a=%" PRIx64 ", s=%" PRIx64 "\n",
+		    *addr, *size);
+}
 
 static void
 startup_memlist()
@@ -380,7 +532,7 @@ startup_memlist()
 	 *    point above KERNEL_TEXT.
 	 */
 	current = phys_install = memlist;
-	copy_memlist_filter(bootops->boot_mem.physinstalled, &current, NULL);
+	copy_memlist_filter(&bootops->boot_mem.physinstalled, &current, NULL);
 	if ((caddr_t)current > (caddr_t)memlist + memlist_sz)
 		panic("physinstalled was too big!");
 	if (prom_debug)
@@ -388,7 +540,7 @@ startup_memlist()
 
 	phys_avail = current;
 	PRM_POINT("Building phys_avail:\n");
-	copy_memlist_filter(bootops->boot_mem.physinstalled, &current,
+	copy_memlist_filter(&bootops->boot_mem.physinstalled, &current,
 	    avail_filter);
 	if ((caddr_t)current > (caddr_t)memlist + memlist_sz)
 		panic("physavail was too big!");
@@ -404,23 +556,10 @@ startup_memlist()
 		    (caddr_t)memlist + memlist_sz - (caddr_t)current);
 	}
 
-	/* ADD_TO_ALLOCATIONS ? */
-	/* valloc_base */
-	/* perform_allocations() */
-	/* phys_install phys_avail */
-	/* bios reserved */
-	/* page_coloring_setup() */
-	/* page_lock_init() */
-	/* page_ctrs_alloc() */
-	/* pcf_init() */
-	// XXX: allocate pse_mutex
-	// XXX: set valloc_base
-	// XXX: set up page coloring
-	//	page_coloring_setup(pagecolor_mem);
-
+	page_coloring_setup(pagecolor_mem);
 	page_lock_init();
 
-	// XXX: page_ctrs_alloc(page_ctrs_mem);
+	(void) page_ctrs_alloc(page_ctrs_mem);
 
 	pcf_init();
 
@@ -428,8 +567,22 @@ startup_memlist()
 	 * Initialize the page structures from the memory lists.
 	 */
 	availrmem_initial = availrmem = freemem = 0;
+	PRM_POINT("Calling kphysm_init()...");
+	npages = kphysm_init(pp_base, npages);
+	PRM_POINT("kphysm_init() done");
+	PRM_DEBUG(npages);
 
-	bop_panic("startup_memlist");
+	/* XXX init_debug_info(); */
+
+	/*
+	 * Now that page_t's have been initialized, remove all the
+	 * initial allocation pages from the kernel free page lists.
+	 */
+	boot_mapin((caddr_t)valloc_base, valloc_sz);
+	boot_mapin((caddr_t)MISC_VA_BASE, MISC_VA_SIZE);
+	PRM_POINT("startup_memlist() done");
+
+	PRM_DEBUG(valloc_sz);
 }
 
 static void
@@ -473,4 +626,121 @@ startup(void)
 	startup_vm();
 	startup_modules();
 	startup_end();
+}
+
+/*
+ * Initialize the platform-specific parts of a page_t.
+ */
+void
+add_physmem_cb(page_t *pp, pfn_t pnum)
+{
+	pp->p_pagenum = pnum;
+}
+
+/*
+ * kphysm_init() initializes physical memory.
+ */
+static pgcnt_t
+kphysm_init(
+	page_t *pp,
+	pgcnt_t npages)
+{
+	struct memlist	*pmem;
+	struct memseg	*cur_memseg;
+	pfn_t		base_pfn;
+	pfn_t		end_pfn;
+	pgcnt_t		num;
+	pgcnt_t		pages_done = 0;
+	uint64_t	addr;
+	uint64_t	size;
+
+	/* XXX do we need ddiphysmin? */
+
+	ASSERT(page_hash != NULL && page_hashsz != 0);
+
+	cur_memseg = memseg_base;
+	for (pmem = phys_avail; pmem && npages; pmem = pmem->ml_next) {
+		/*
+		 * In a 32 bit kernel can't use higher memory if we're
+		 * not booting in PAE mode. This check takes care of that.
+		 */
+		addr = pmem->ml_address;
+		size = pmem->ml_size;
+		if (btop(addr) > physmax)
+			continue;
+
+		/*
+		 * align addr and size - they may not be at page boundaries
+		 */
+		if ((addr & MMU_PAGEOFFSET) != 0) {
+			addr += MMU_PAGEOFFSET;
+			addr &= ~(uint64_t)MMU_PAGEOFFSET;
+			size -= addr - pmem->ml_address;
+		}
+
+		/* only process pages below or equal to physmax */
+		if ((btop(addr + size) - 1) > physmax)
+			size = ptob(physmax - btop(addr) + 1);
+
+		num = btop(size);
+		if (num == 0)
+			continue;
+
+		if (num > npages)
+			num = npages;
+
+		npages -= num;
+		pages_done += num;
+		base_pfn = btop(addr);
+
+		if (prom_debug)
+			prom_printf("MEMSEG addr=0x%" PRIx64
+			    " pgs=0x%lx pfn 0x%lx-0x%lx\n",
+			    addr, num, base_pfn, base_pfn + num);
+
+		/*
+		 * Build the memsegs entry
+		 */
+		cur_memseg->pages = pp;
+		cur_memseg->epages = pp + num;
+		cur_memseg->pages_base = base_pfn;
+		cur_memseg->pages_end = base_pfn + num;
+
+		/*
+		 * Insert into memseg list in decreasing pfn range
+		 * order. Low memory is typically more fragmented such
+		 * that this ordering keeps the larger ranges at the
+		 * front of the list for code that searches memseg.
+		 * This ASSERTS that the memsegs coming in from boot
+		 * are in increasing physical address order and not
+		 * contiguous.
+		 */
+		if (memsegs != NULL) {
+			ASSERT(cur_memseg->pages_base >=
+			    memsegs->pages_end);
+			cur_memseg->next = memsegs;
+		}
+		memsegs = cur_memseg;
+
+		/*
+		 * add_physmem() initializes the PSM part of the page
+		 * struct by calling the PSM back with add_physmem_cb().
+		 * In addition it coalesces pages into larger pages as
+		 * it initializes them.
+		 */
+		prom_printf("add_physmem\n");
+		add_physmem(pp, num, base_pfn);
+		prom_printf("add_physmem done\n");
+		cur_memseg++;
+		availrmem_initial += num;
+		availrmem += num;
+
+		pp += num;
+	}
+
+	PRM_DEBUG(availrmem_initial);
+	PRM_DEBUG(availrmem);
+	PRM_DEBUG(freemem);
+	build_pfn_hash();
+	return (pages_done);
 }

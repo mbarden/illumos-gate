@@ -151,11 +151,8 @@ mlsetup(struct regs *rp)
 
 	pg_cpu_bootstrap(CPU);
 
-#ifdef XXX_ARM_VM
+	/* XXX why was this XXX'd? */
 	cpu_vm_data_init(CPU);
-#else
-	bop_printf(NULL, "XXX_ARM_VM: cpu_vm_data_init\n");
-#endif
 
 	/*
 	 * XXX This is where we should be entering kmdb

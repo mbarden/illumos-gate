@@ -2883,6 +2883,7 @@ free_vp_pages(vnode_t *vp, u_offset_t off, size_t len)
 	}
 }
 
+extern void prom_printf();
 /*
  * Reclaim the given page from the free list.
  * If pp is part of a large pages, only the given constituent page is reclaimed
@@ -3048,8 +3049,10 @@ page_reclaim_nomem:
 
 	CPU_STATS_ENTER_K();
 	cpup = CPU;	/* get cpup now that CPU cannot change */
+#if 0
 	CPU_STATS_ADDQ(cpup, vm, pgrec, 1);
 	CPU_STATS_ADDQ(cpup, vm, pgfrec, 1);
+#endif
 	CPU_STATS_EXIT_K();
 	ASSERT(pp->p_szc == 0);
 

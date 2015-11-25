@@ -166,16 +166,29 @@ mmu_init(void)
 	while (mmu.hash_cnt > 16 && mmu.hash_cnt >= max_htables)
 		mmu.hash_cnt >>= 1;
 	mmu.vlp_hash_cnt = mmu.hash_cnt;
-
-#if defined(__amd64)
-	/*
-	 * If running in 64 bits and physical memory is large,
-	 * increase the size of the cache to cover all of memory for
-	 * a 64 bit process.
-	 */
-#define	HASH_MAX_LENGTH 4
-	while (mmu.hash_cnt * HASH_MAX_LENGTH < max_htables)
-		mmu.hash_cnt <<= 1;
-#endif
 }
 
+
+extern uint_t hment_mapcnt(page_t *pp);
+
+/*
+ * returns approx number of mappings to this pp.  A return of 0 implies
+ * there are no mappings to the page.
+ */
+ulong_t
+hat_page_getshare(page_t *pp)
+{
+	uint_t cnt;
+	cnt = hment_mapcnt(pp);
+	return (cnt);
+}
+
+/*ARGSUSED*/
+void
+hat_kpm_mseghash_clear(int nentries)
+{}
+
+/*ARGSUSED*/
+void
+hat_kpm_mseghash_update(pgcnt_t inx, struct memseg *msp)
+{}

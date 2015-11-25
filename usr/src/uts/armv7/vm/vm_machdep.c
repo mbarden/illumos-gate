@@ -39,6 +39,8 @@
 #define	ARMv7_PAGE_COLORS	4
 uint_t mmu_page_colors = ARMv7_PAGE_COLORS;
 
+plcnt_t plcnt;
+
 uint_t vac_colors = 1;
 
 uint_t mmu_page_sizes = MMU_PAGE_SIZES;
@@ -183,4 +185,41 @@ page_coloring_init(uint_t l2_sz, int l2_linesz, int l2_assoc)
 	colorsz += page_colors * sizeof (page_t *);
 
 	return (colorsz);
+}
+
+/*
+ * Called once at startup to configure page_coloring data structures and
+ * does the 1st page_free()/page_freelist_add().
+ */
+void
+page_coloring_setup(caddr_t pcmemaddr)
+{
+	int	i;
+	caddr_t	addr;
+	int	colors;
+
+	/*
+	 * do page coloring setup
+	 */
+	addr = pcmemaddr;
+
+	for (i = 0; i < NPC_MUTEX; i++) {
+		fpc_mutex[i] = (kmutex_t *)addr;
+		addr += (max_mem_nodes * sizeof (kmutex_t));
+	}
+	for (i = 0; i < NPC_MUTEX; i++) {
+		cpc_mutex[i] = (kmutex_t *)addr;
+		addr += (max_mem_nodes * sizeof (kmutex_t));
+	}
+
+	page_freelists = (page_t ***)addr;
+	addr += (mmu_page_sizes * sizeof (page_t **));
+
+	for (i = 0; i < mmu_page_sizes; i++) {
+		colors = page_get_pagecolors(i);
+		page_freelists[i] = (page_t **)addr;
+		addr += (colors * sizeof (page_t *));
+	}
+	page_cachelists = (page_t **)addr;
+	addr += (page_colors * sizeof (page_t *));
 }

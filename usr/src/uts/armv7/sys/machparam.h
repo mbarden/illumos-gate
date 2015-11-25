@@ -134,7 +134,8 @@ extern "C" {
 
 #define	KERNEL_TEXT	ADDRESS_C(0xfe800000)
 
-#define	MISC_VA_BASE	(KERNEL_TEXT - MMU_PAGESIZE)
+#define	MISC_VA_BASE	(KERNEL_TEXT - 5*MMU_PAGESIZE)
+#define	MISC_VA_SIZE	(KERNEL_TEXT - MISC_VA_BASE)
 /*
  * Size of the unmapped "red zone" at the very bottom of the kernel's address
  * space.  Since segmap starts immediately above the red zone, this needs to be

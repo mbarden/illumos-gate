@@ -20,6 +20,7 @@
 
 #include <sys/types.h>
 #include <sys/varargs.h>
+#include <sys/cmn_err.h>
 
 size_t
 strlen(const char *s)
@@ -94,11 +95,25 @@ lowbit(ulong_t i)
 	return (h);
 }
 
-extern void bop_panic(const char *);
-
+extern void bop_panic(const char *) __attribute__ ((noreturn));;
 
 void
 vpanic(const char *fmt, va_list adx)
 {
-  bop_panic(fmt);
+	char buf[512];
+	(void) vsnprintf(buf, sizeof (buf), fmt, adx);
+	bop_panic(buf);
 }
+
+#if 0
+uintptr_t
+arm_va_to_pa(uintptr_t va)
+{
+	unsigned int pa;
+	__asm__("\t mcr p15, 0, %0, c7, c8, 0\n"
+	    "\t isb\n"
+	    "\t mrc p15, 0, %0, c7, c4, 0\n" : "=r" (pa) : "0" (va));
+
+	return (pa);
+}
+#endif

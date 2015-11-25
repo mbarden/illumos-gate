@@ -33,6 +33,9 @@
 extern "C" {
 #endif
 
+#include <sys/mach_mmu.h>
+#include <vm/hat_pte.h>
+
 #if defined(__GNUC__) && defined(_ASM_INLINES) && defined(_KERNEL) && 0
 #include <asm/htable.h>
 #endif

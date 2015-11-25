@@ -28,6 +28,7 @@ MATH_OBJS += 			\
 
 MISC_OBJS +=			\
 	copy.o			\
+	armv7_asm.o		\
 	armv7_subr.o
 
 ML_OBJS +=			\
@@ -37,6 +38,7 @@ ML_OBJS +=			\
 	trap.o
 
 OS_OBJS +=			\
+	arm_mmu.o		\
 	bsmdep.o		\
 	confunix.o		\
 	cpuid.o			\
@@ -44,9 +46,11 @@ OS_OBJS +=			\
 	fakebop.o		\
 	intr.o			\
 	hat_arm.o		\
+	hment.o			\
 	lgrpplat.o		\
 	mach_sysconfig.o	\
 	mem_config_stubs.o	\
+	memlist_new.o		\
 	memnode.o		\
 	mlsetup.o		\
 	mp_startup.o		\

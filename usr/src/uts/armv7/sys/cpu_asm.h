@@ -90,6 +90,10 @@ extern "C" {
 #define	CP15_IDISAR3(reg)	p15, 0, reg, c0, c2, 3
 #define	CP15_IDISAR4(reg)	p15, 0, reg, c0, c2, 4
 #define	CP15_IDISAR5(reg)	p15, 0, reg, c0, c2, 5
+
+#define	CP15_ATS1CPR(reg)	p15, 0, reg, c7, c8, 0
+#define	CP15_PAR(reg)		p15, 0, reg, c7, c4, 0
+#define	CP15_CNTPCT(reg, reg2)	p15, 0, reg, reg2, c14
 #endif
 
 #ifdef __cplusplus
