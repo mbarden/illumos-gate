@@ -38,6 +38,7 @@ ML_OBJS +=			\
 	trap.o
 
 OS_OBJS +=			\
+	archdep.o		\
 	arm_mmu.o		\
 	bsmdep.o		\
 	confunix.o		\

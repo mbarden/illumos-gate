@@ -21,6 +21,7 @@
 #include <sys/types.h>
 #include <sys/varargs.h>
 #include <sys/cmn_err.h>
+#include <sys/time.h>
 
 size_t
 strlen(const char *s)
@@ -117,3 +118,6 @@ arm_va_to_pa(uintptr_t va)
 	return (pa);
 }
 #endif
+
+static hrtime_t _hrtime_time; /* XXX i don't feel like doing this right now */
+hrtime_t gethrtime() { return (_hrtime_time++); }

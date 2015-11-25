@@ -26,6 +26,8 @@
 #include <vm/hat_pte.h>
 #include <vm/vm_dep.h>
 #include <vm/seg_kmem.h>
+#include <sys/vm_machparam.h>
+
 /*
  *	32-bit Kernel's Virtual memory layout.
  *		+-----------------------+
@@ -65,6 +67,7 @@
  */
 
 static pgcnt_t kphysm_init(page_t *pp, pgcnt_t npages);
+static void layout_kernel_va(void);
 
 extern void pcf_init(void);
 
@@ -79,8 +82,13 @@ char kern_bootfile[OBP_MAXPATHLEN];
 /* XXX: 1GB for now */
 pgcnt_t physmem = mmu_btop(1ul << 30);
 
+uintptr_t	kernelbase;
+size_t		segmapsize;
+uintptr_t	segmap_start;
 pgcnt_t npages;
 pgcnt_t orig_npages;
+size_t		core_size;		/* size of "core" heap */
+uintptr_t	core_base;		/* base address of "core" heap */
 
 caddr_t s_text;		/* start of kernel text segment */
 caddr_t e_text;		/* end of kernel text segment */
@@ -588,8 +596,56 @@ startup_memlist()
 static void
 startup_kmem()
 {
+  	PRM_POINT("startup_kmem() starting...");
+
+	kernelbase = (uintptr_t)KERNELBASE;
+	kernelbase -= ROUND_UP_PAGE(2 * valloc_sz);
+	PRM_DEBUG(kernelbase);
+
+	core_base = valloc_base;
+	core_size = 0;
+
+	PRM_DEBUG(core_base);
+	PRM_DEBUG(core_size);
+	PRM_DEBUG(kernelbase);
+
+	ekernelheap = (char *)core_base;
+	PRM_DEBUG(ekernelheap);
+
+	*(uintptr_t *)&_kernelbase = kernelbase;
+	*(uintptr_t *)&_userlimit = kernelbase;
+	*(uintptr_t *)&_userlimit32 = _userlimit;
+
+	PRM_DEBUG(_kernelbase);
+	PRM_DEBUG(_userlimit);
+	PRM_DEBUG(_userlimit32);
+
+	layout_kernel_va();
+
+	/*
+	 * If segmap is too large we can push the bottom of the kernel heap
+	 * higher than the base.  Or worse, it could exceed the top of the
+	 * VA space entirely, causing it to wrap around.
+	 */
+	if (kernelheap >= ekernelheap || (uintptr_t)kernelheap < kernelbase)
+		panic("too little address space available for kernelheap");
+
+	/*
+	 * Initialize the kernel heap. Note 3rd argument must be > 1st.
+	 */
+	kernelheap_init(kernelheap, ekernelheap,
+	    kernelheap + MMU_PAGESIZE,
+	    (void *)core_base, (void *)(core_base + core_size));
+
+	/*
+	 * Initialize kernel memory allocator.
+	 */
+	kmem_init();
+
+
 	bop_panic("startup_kmem");
 }
+
 
 static void
 startup_vm()
@@ -743,4 +799,33 @@ kphysm_init(
 	PRM_DEBUG(freemem);
 	build_pfn_hash();
 	return (pages_done);
+}
+
+static void
+layout_kernel_va(void)
+{
+	PRM_POINT("layout_kernel_va() starting...");
+	/*
+	 * Establish the final size of the kernel's heap, size of segmap,
+	 * segkp, etc.
+	 */
+
+	segmap_start = ROUND_UP_PAGE(kernelbase);
+	PRM_DEBUG(segmap_start);
+
+	segmapsize = SEGMAPDEFAULT;
+
+	/*
+	 * 32-bit systems don't have segkpm or segkp, so segmap appears at
+	 * the bottom of the kernel's address range.  Set aside space for a
+	 * small red zone just below the start of segmap.
+	 */
+	segmap_start += KERNEL_REDZONE_SIZE;
+	segmapsize -= KERNEL_REDZONE_SIZE;
+
+	PRM_DEBUG(segmap_start);
+	PRM_DEBUG(segmapsize);
+	kernelheap = (caddr_t)ROUND_UP_PAGE(segmap_start + segmapsize);
+	PRM_DEBUG(kernelheap);
+	PRM_POINT("layout_kernel_va() done...");
 }

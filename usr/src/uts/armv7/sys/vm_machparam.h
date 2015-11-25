@@ -70,6 +70,7 @@ extern "C" {
  * driver for fast kernel mappings.
  */
 #define	SEGMAPSIZE	(16 * 1024 * 1024)
+#define	SEGMAPDEFAULT	SEGMAPSIZE
 
 /*
  * The time for a process to be blocked before being very swappable.
