@@ -630,13 +630,14 @@ startup_kmem()
 	if (kernelheap >= ekernelheap || (uintptr_t)kernelheap < kernelbase)
 		panic("too little address space available for kernelheap");
 
+	PRM_POINT("kernelheap_init");
 	/*
 	 * Initialize the kernel heap. Note 3rd argument must be > 1st.
 	 */
 	kernelheap_init(kernelheap, ekernelheap,
 	    kernelheap + MMU_PAGESIZE,
 	    (void *)core_base, (void *)(core_base + core_size));
-
+	PRM_POINT("kmem_init");
 	/*
 	 * Initialize kernel memory allocator.
 	 */
@@ -672,6 +673,8 @@ startup_end()
  *
  * This is the ARM machine-dependent startup code. Let's startup the world!
  */
+extern int stack_test1(void);
+extern int stack_test2(void);
 void
 startup(void)
 {

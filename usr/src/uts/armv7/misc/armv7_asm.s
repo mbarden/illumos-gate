@@ -44,4 +44,35 @@ randtick(void)
 	bx	lr
 	SET_SIZE(randtick)
 
+	ENTRY(caller)
+	ldr	r0, [r9]
+	bx	lr
+	SET_SIZE(caller)
+
+	ENTRY(callee)
+	mov	r0, lr
+	bx	lr
+	SET_SIZE(callee)
+
+	ENTRY(stack_test1)
+	ldr	r0, =0x12345678
+	ldr	r1, =0x87654321
+	push	{r0, r1}
+	add	r2, sp, #4
+	pop	{r0, r1}
+	ldr	r0, [r2]
+	bx	lr
+	SET_SIZE(stack_test1)
+
+	ENTRY(stack_test2)
+	ldr	r0, =0x12345678
+	ldr	r1, =0x87654321
+	push	{r0, r1}
+	ldr	r2, [sp]
+	pop	{r0, r1}
+	mov	r0, r2
+	bx	lr
+	SET_SIZE(stack_test2)
+
+	
 #endif	/* __lint */
