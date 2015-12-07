@@ -20,6 +20,7 @@
 
 #include <sys/asm_linkage.h>
 #include <sys/cpu_asm.h>
+#include <sys/machlock.h>
 
 #if defined(__lint)
 #include <sys/thread.h>
@@ -37,6 +38,48 @@
 	mov	r0, [r9, #4]
 	bx	lr
 	SET_SIZE(caller)
+
+#define	SETPRI(lvl)							\
+	mov	r0, #lvl;						\
+	b	do_splx
+
+#define	RAISE(lvl)							\
+	mov	r0, #lvl;						\
+	b	splr
+
+	ENTRY(spl8)
+	SETPRI(15)
+	SET_SIZE(spl8)
+
+	ENTRY(spl7)
+	RAISE(13)
+	SET_SIZE(spl7)
+
+	/* sun specific - highest priority onboard serial i/o asy ports */
+	ENTRY(splzs)
+	SETPRI(12)	/* Can't be a RAISE, as it's used to lower us */
+	SET_SIZE(splzs)
+
+	ENTRY(splhi)
+	ALTENTRY(splhigh)
+	ALTENTRY(spl6)
+	ALTENTRY(i_ddi_splhigh)
+
+	RAISE(DISP_LEVEL)
+
+	SET_SIZE(i_ddi_splhigh)
+	SET_SIZE(spl6)
+	SET_SIZE(splhigh)
+	SET_SIZE(splhi)
+
+	/* allow all interrupts */
+	ENTRY(spl0)
+	SETPRI(0)
+	SET_SIZE(spl0)
+
+	ENTRY(splx)
+	b	do_splx
+	SET_SIZE(splx)
 
 #if defined(__lint)
 

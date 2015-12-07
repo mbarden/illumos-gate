@@ -42,6 +42,7 @@ OS_OBJS +=			\
 	cpuid.o			\
 	flush.o			\
 	fakebop.o		\
+	intr.o			\
 	lgrpplat.o		\
 	mach_sysconfig.o	\
 	mem_config_stubs.o	\
