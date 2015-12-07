@@ -25,6 +25,19 @@
 #include <sys/thread.h>
 #endif /* __lint */
 
+	/*
+	 * a() calls b() calls caller()
+	 * return the return address in a()
+	 *
+	 * NOTE: There is no ABI-defined frame format.  To make matters
+	 * worse, gcc and clang use a different definition.  The below
+	 * assumes gcc behavior.
+	 */
+	ENTRY(caller)
+	mov	r0, [r9, #4]
+	bx	lr
+	SET_SIZE(caller)
+
 #if defined(__lint)
 
 /*
