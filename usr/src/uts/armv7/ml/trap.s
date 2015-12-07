@@ -44,7 +44,7 @@
 	.word handle_svc		/* Supervisor Call */
 	.word handle_prefetchabt	/* Prefetch abort */
 	.word handle_dataabt		/* Data abort */
-	.word 0x00000014		/* Reserved (infinite loops) */
+	.word 0xffff0014		/* Reserved (infinite loops) */
 	.word handle_irq		/* IRQ */
 	.word handle_fiq		/* FIQ */
 .popsection
