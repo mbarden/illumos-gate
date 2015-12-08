@@ -30,6 +30,7 @@
 #include <sys/asm_linkage.h>
 #include <sys/mutex_impl.h>
 #include <sys/cpu_asm.h>
+#include <sys/rwlock_impl.h>
 
 /*
  * mutex_enter() and mutex_exit().
@@ -214,3 +215,159 @@ mutex_delay_default(void)
 	SET_SIZE(mutex_delay_default)
 
 #endif	/* __lint */
+
+/*
+ * rw_enter() and rw_exit().
+ *
+ * These routines handle the simple cases of rw_enter (write-locking an unheld
+ * lock or read-locking a lock that's neither write-locked nor write-wanted)
+ * and rw_exit (no waiters or not the last reader).  If anything complicated
+ * is going on we punt to rw_enter_sleep() and rw_exit_wakeup(), respectively.
+ */
+#if defined(lint) || defined(__lint)
+
+/* ARGSUSED */
+void
+rw_enter(krwlock_t *lp, krw_t rw)
+{}
+
+/* ARGSUSED */
+void
+rw_exit(krwlock_t *lp)
+{}
+
+#else	/* __lint */
+
+	/* XXX how on earth does x86 get these values? */
+#define	RW_WRITER	0
+	
+	ENTRY(rw_enter)
+	mrc	CP15_TPIDRPRW(r2)			@ r2 = thread ptr
+	cmp	r1, #RW_WRITER				
+	beq	.rw_write_enter
+	ldr	r3, [r2, #T_KPRI_REQ]
+	add	r3, r3, #1
+	str	r3, [r2, #T_KPRI_REQ]			@ THREAD_KPRI_REQUEST()
+	ldrex	r3, [r0]				@ r0 = lock ptr
+	tst	r3, #(RW_WRITE_LOCKED|RW_WRITE_WANTED)
+	bne	rw_enter_sleep
+	orr	r3, r3, #RW_READ_LOCK
+	strex	r2, r3, [r0]
+	bne	rw_enter_sleep
+	dmb
+	bx	lr
+	
+.rw_write_enter:
+	orr	r2, r2, #RW_WRITE_LOCKED
+	ldrex	r3, [r0]
+	cmp	r3, #0
+	bne	rw_enter_sleep
+	strex	r3, r2, [r0]
+	cmp	r3, #0
+	bne	rw_enter_sleep
+	dmb
+	bx	lr
+	SET_SIZE(rw_enter)
+
+	ENTRY(rw_exit)
+	mov	r2, #0
+	ldrex	r1, [r0]				@ r0 = lock ptr
+	cmp	r1, #RW_READ_LOCK			@ single-reader, no waiters?
+	bne	.rw_not_single_reader
+
+.rw_read_exit:
+	strex	r3, r2, [r0]
+	cmp	r3, #0					@ XXX x86 also compares to old rw_wwwh (r1)
+	bne	rw_exit_wakeup
+	mrc	CP15_TPIDRPRW(r1)			@ r1 = thread ptr
+	ldr	r2, [r1, #T_KPRI_REQ]
+	sub	r2, r2, #1
+	str	r2, [r1, #T_KPRI_REQ]			@ THREAD_KPRI_RELEASE()
+	dmb
+	bx	lr
+	
+.rw_not_single_reader:
+	tst	r1, #RW_WRITE_LOCKED			@ write-locked or write-wanted?
+	bne	.rw_write_exit
+	and	r1, #(~RW_READ_LOCK)
+	cmp	r1, #RW_READ_LOCK
+	bge	.rw_read_exit				@ not last reader, safe to drop
+	b	rw_exit_wakeup				@ last reader with waiters
+	
+.rw_write_exit:
+	strex	r3, r2, [r0]
+	cmp	r3, #0					@ XXX x86 also compares to thread ptr
+	bne	rw_exit_wakeup
+	dmb
+	bx	lr
+	SET_SIZE(rw_exit)
+
+#endif	/* __lint */
+
+/*
+ * lock_set_spl(lock_t *lp, int new_pil, u_short *old_pil)
+ * Drops lp, sets pil to new_pil, stores old pil in *old_pil.
+ */
+
+#if defined(lint) || defined(__lint)
+
+/* ARGSUSED */
+void
+lock_set_spl(lock_t *lp, int new_pil, u_short *old_pil)
+{}
+
+#else	/* __lint */
+
+	
+	ENTRY(lock_set_spl)
+	push	{r4-r6, lr}
+	mov	r4, r0			@ r4 = lock ptr
+	mov	r5, r1			@ r5 = pri lvl
+	mov	r6, r2			@ r6 = old_pil
+	mov	r0, r1
+	bl	splr			@ raise priority level
+	mov	r1, #(-1)
+	ldrexb	r2, [r4]
+	cmp	r2, #0			@ check if held
+	bne	.lss_miss		@ held, bail
+	strexb	r2, r1, [r4]
+	cmp	r2, #0
+	bne	.lss_miss		@ strex failed, bail
+	dmb
+	strb	r0, [r6]
+	pop	{r4-r6, lr}
+	bx	lr
+
+.lss_miss:
+	mov	r3, r0			@ original pil
+	mov	r2, r6			@ old_pil addr
+	mov	r1, r5			@ new_pil
+	mov	r0, r4			@ lock addr
+	bl	lock_set_spl_spin
+	pop	{r4-r7, lr}
+	bx	lr
+	SET_SIZE(lock_set_spl)
+
+#endif
+
+/*
+ * lock_clear_splx(lp, s)
+ */
+
+#if defined(lint) || defined(__lint)
+
+/* ARGSUSED */
+void
+lock_clear_splx(lock_t *lp, int s)
+{}
+
+#else	/* __lint */
+
+	ENTRY(lock_clear_splx)
+	mov	r2, #0
+	strb	r2, [r0]		@ XXX x86 doesn't use xchg for this, is it exclusive?
+	mov	r0, r1
+	b	splx
+	SET_SIZE(lock_clear_splx)
+
+#endif

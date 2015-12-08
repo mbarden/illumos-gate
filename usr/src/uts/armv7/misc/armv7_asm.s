@@ -44,16 +44,6 @@ randtick(void)
 	bx	lr
 	SET_SIZE(randtick)
 
-	ENTRY(caller)
-	ldr	r0, [r9]
-	bx	lr
-	SET_SIZE(caller)
-
-	ENTRY(callee)
-	mov	r0, lr
-	bx	lr
-	SET_SIZE(callee)
-
 	ENTRY(stack_test1)
 	ldr	r0, =0x12345678
 	ldr	r1, =0x87654321

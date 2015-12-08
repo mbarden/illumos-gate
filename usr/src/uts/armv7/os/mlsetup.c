@@ -165,7 +165,10 @@ mlsetup(struct regs *rp)
 	/*
 	 * We support zero CPU DR at this time.
 	 */
-	max_ncpus = boot_max_ncpus = boot_ncpus;
+	/* XXX boot_ncpus hasn't been initialized, so things are breaking.
+	   where is it supposed to be initialized?
+	*/
+	max_ncpus = boot_max_ncpus = boot_ncpus = NCPU;
 
 	/*
 	 * Initialize the lgrp framework

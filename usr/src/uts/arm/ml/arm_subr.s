@@ -35,9 +35,14 @@
 	 * assumes gcc behavior.
 	 */
 	ENTRY(caller)
-	mov	r0, [r9, #4]
+	ldr	r0, [r9]
 	bx	lr
 	SET_SIZE(caller)
+
+	ENTRY(callee)
+	mov	r0, lr
+	bx	lr
+	SET_SIZE(callee)
 
 #define	SETPRI(lvl)							\
 	mov	r0, #lvl;						\

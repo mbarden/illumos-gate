@@ -44,7 +44,8 @@
  * is being left behind. No reason to add it.
  */
 
-#define	SDT_NOP	0x1ea00000
+#define	SDT_NOP	0xe1a00000 /* mov r0, r0 */
+/* XXX armv7 has an ACTUAL nop instruction. apparenlty it's 0xe320f000 */
 
 static int
 sdt_reloc_resolve(struct module *mp, char *symname, uint32_t *instr)

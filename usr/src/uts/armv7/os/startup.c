@@ -596,6 +596,8 @@ startup_memlist()
 static void
 startup_kmem()
 {
+	extern void page_set_colorequiv_arr(void);
+
   	PRM_POINT("startup_kmem() starting...");
 
 	kernelbase = (uintptr_t)KERNELBASE;
@@ -643,8 +645,15 @@ startup_kmem()
 	 */
 	kmem_init();
 
+	/*
+	 * Factor in colorequiv to check additional 'equivalent' bins
+	 */
+	page_set_colorequiv_arr();
 
-	bop_panic("startup_kmem");
+	/*
+	 * Initialize bp_mapin().
+	 */
+	bp_init(MMU_PAGESIZE, HAT_STORECACHING_OK);
 }
 
 
