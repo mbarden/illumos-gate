@@ -660,7 +660,95 @@ startup_kmem()
 static void
 startup_vm()
 {
+
 	bop_panic("startup_vm");
+	hat_init();
+	hat_kern_alloc();
+	hat_kern_setup();
+	/* no more bop_alloc() */
+	kvm_init();
+
+	/*
+	 * When printing memory, show the total as physmem less
+	 * that stolen by a debugger.
+	 */
+	cmn_err(CE_CONT, "?mem = %ldK (0x%lx000)\n",
+	    (ulong_t)(physinstalled) << (PAGESHIFT - 10),
+	    (ulong_t)(physinstalled) << (PAGESHIFT - 12));
+
+	/*
+	 * disable automatic large pages for small memory systems or
+	 * when the disable flag is set.
+	 *
+	 * Do not yet consider page sizes larger than 2m/4m.
+	 */
+	if (!auto_lpg_disable && mmu.max_page_level > 0) {
+		max_uheap_lpsize = LEVEL_SIZE(1);
+		max_ustack_lpsize = LEVEL_SIZE(1);
+		max_privmap_lpsize = LEVEL_SIZE(1);
+		max_uidata_lpsize = LEVEL_SIZE(1);
+		max_utext_lpsize = LEVEL_SIZE(1);
+		max_shm_lpsize = LEVEL_SIZE(1);
+	}
+	if (physmem < privm_lpg_min_physmem || mmu.max_page_level == 0 ||
+	    auto_lpg_disable) {
+		use_brk_lpg = 0;
+		use_stk_lpg = 0;
+	}
+
+
+	i = ptob(MIN(segkpsize, max_phys_segkp));
+
+	rw_enter(&kas.a_lock, RW_WRITER);
+	if (segkp_fromheap) {
+		segkp->s_as = &kas;
+	} else if (seg_attach(&kas, va, i, segkp) < 0)
+		cmn_err(CE_PANIC, "startup: cannot attach segkp");
+	if (segkp_create(segkp) != 0)
+		cmn_err(CE_PANIC, "startup: segkp_create failed");
+	rw_exit(&kas.a_lock);
+
+
+	/*
+	 * kpm segment
+	 */
+	segmap_kpm = kpm_enable &&
+	    segmap_kpm && PAGESIZE == MAXBSIZE;
+
+	if (kpm_enable) {
+		rw_enter(&kas.a_lock, RW_WRITER);
+
+		/*
+		 * The segkpm virtual range range is larger than the
+		 * actual physical memory size and also covers gaps in
+		 * the physical address range for the following reasons:
+		 * . keep conversion between segkpm and physical addresses
+		 *   simple, cheap and unambiguous.
+		 * . avoid extension/shrink of the the segkpm in case of DR.
+		 * . avoid complexity for handling of virtual addressed
+		 *   caches, segkpm and the regular mapping scheme must be
+		 *   kept in sync wrt. the virtual color of mapped pages.
+		 * Any accesses to virtual segkpm ranges not backed by
+		 * physical memory will fall through the memseg pfn hash
+		 * and will be handled in segkpm_fault.
+		 * Additional kpm_size spaces needed for vac alias prevention.
+		 */
+		if (seg_attach(&kas, kpm_vbase, kpm_size * vac_colors,
+		    segkpm) < 0)
+			cmn_err(CE_PANIC, "cannot attach segkpm");
+
+		b.prot = PROT_READ | PROT_WRITE;
+		b.nvcolors = shm_alignment >> MMU_PAGESHIFT;
+
+		if (segkpm_create(segkpm, (caddr_t)&b) != 0)
+			panic("segkpm_create segkpm");
+
+		rw_exit(&kas.a_lock);
+
+		mach_kpm_init();
+	}
+
+	segdev_init();
 }
 
 static void
