@@ -283,10 +283,9 @@ ndr_clnt_call(ndr_binding_t *mbind, int opnum, void *params)
 		    mxa.recv_nds.pdu_body_size - mxa.recv_auth.auth_pad_len;
 		mxa.recv_nds.pdu_size = recv_pdu_size;
 
-		if (ndr_clnt_get_frags(clnt, &mxa) < 0) {
-			rc = NDR_DRC_FAULT_RECEIVED_MALFORMED;
+		rc = ndr_clnt_get_frags(clnt, &mxa);
+		if (NDR_DRC_IS_FAULT(rc))
 			goto fault_exit;
-		}
 
 		mxa.recv_nds.pdu_scan_offset = recv_pdu_scan_offset;
 	}
